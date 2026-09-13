@@ -1053,7 +1053,19 @@ async function toQR(){
   }
 }
 toQR._n=0;
-function openPaymentPage(){state.walletKind==='cex'?gotoCex():gotoDex();}
+function openPaymentPage(){
+  // Open the REAL Paydify link returned by createPayment → it invokes the actual wallet / exchange
+  // (Binance orders → app.binance.com universal link → opens Binance app; Web3 → Paydify checkout →
+  //  Connect wallet → WalletConnect deeplink). Open in a new tab so this QR page keeps polling and
+  //  auto-flips to success once paid.
+  var link = state.liveTxn && state.liveTxn.httplink;
+  if(link){
+    var w = window.open(link, '_blank');
+    if(!w) window.location.href = link;   // popup blocked → same tab (still triggers the app-open)
+    return;
+  }
+  state.walletKind==='cex'?gotoCex():gotoDex();   // no live order (offline/demo) → in-demo mockup
+}
 
 function gotoCex(){
   const w=state.wallet,s=state.scenario;
