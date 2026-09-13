@@ -1,0 +1,5 @@
+paydify.secret.json
+*.command
+promo-assets
+__pycache__
+.DS_Store

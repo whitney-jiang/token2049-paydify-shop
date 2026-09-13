@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Paydify · TOKEN2049 Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  :root{
+    --green:#0FBE7C;--green-soft:#E7FAF1;--green-line:#8FE4C0;
+    --ink:#141B2D;--ink-2:#2B3346;--muted:#8A93A6;--muted-2:#AEB6C6;
+    --bg:#EEF0F4;--card:#FFFFFF;--line:#EDEFF3;--line-2:#E3E6EC;
+    --danger:#E5484D;--danger-soft:#FDECEC;
+    --shadow:0 8px 30px rgba(20,27,45,.10);--radius:20px;
+    --font:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:var(--font);color:var(--ink);
+    background:radial-gradient(1200px 700px at 50% -10%, #f3f5f9 0%, #d9dde5 60%, #cfd4dd 100%);
+    display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px;
+  }
+  .phone{
+    position:relative;width:392px;height:min(844px,calc(100dvh - 40px));
+    background:var(--bg);border-radius:44px;overflow:hidden;
+    box-shadow:0 40px 90px rgba(20,27,45,.35),0 0 0 12px #0c0f16,0 0 0 13px #23262e;
+  }
+  @media (max-width:440px){ body{padding:0} .phone{width:100vw;height:100dvh;border-radius:0;box-shadow:none} }
+  .statusbar{position:absolute;top:0;left:0;right:0;height:46px;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 26px;color:var(--ink);pointer-events:none}
+  .statusbar.on-dark{color:#fff}
+  .statusbar .sb-time{font-size:15px;font-weight:700;letter-spacing:.2px}
+  .sb-right{display:flex;gap:7px;align-items:center}
+  .sb-right svg{display:block}
+  .island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:86px;height:25px;background:#000;border-radius:14px;z-index:41}
+
+  .screens{position:absolute;inset:0}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;padding-top:44px;overflow:hidden}
+  .screen.active{display:flex;animation:slideIn .32s cubic-bezier(.22,.61,.36,1)}
+  @keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .scroll::-webkit-scrollbar{display:none}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .row{display:flex;align-items:center}
+  .btn-dark{width:100%;border:0;cursor:pointer;background:var(--ink);color:#fff;font-family:var(--font);font-size:17px;font-weight:700;letter-spacing:.2px;height:58px;border-radius:32px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 24px rgba(20,27,45,.28);transition:transform .12s,opacity .2s}
+  .btn-dark:active{transform:scale(.98)}
+  .btn-dark[disabled]{background:#C7CCD6;color:#fff;box-shadow:none;cursor:not-allowed}
+  .btn-green{background:var(--green);box-shadow:0 10px 24px rgba(15,190,124,.34)}
+  .footbar{padding:14px 18px calc(18px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(238,240,244,0),var(--bg) 34%)}
+  .backbtn{position:absolute;left:14px;top:52px;z-index:30;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(20,27,45,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:var(--ink)}
+  .fab{position:absolute;right:0;top:56%;z-index:25;width:34px;height:34px;border-radius:50% 0 0 50%;background:#fff;box-shadow:-4px 4px 14px rgba(20,27,45,.14);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .fab .b{width:14px;height:14px;border-radius:50%;background:var(--green)}
+
+  /* ===================== HOME ===================== */
+  #screen-home{background:#0B0E14;padding-top:0}
+  .home-scroll{flex:1;overflow-y:auto}
+  .home-scroll::-webkit-scrollbar{display:none}
+  /* ---- shop ---- */
+  .shop-hero{padding:56px 20px 18px;background:linear-gradient(135deg,#eef3ff 0%,#f6f8fd 60%,#fff 100%);border-bottom:1px solid #eef0f5}
+  .shop-top{display:flex;align-items:center;gap:11px}
+  .shop-logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#2E6BF6,#1652F0);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;box-shadow:0 6px 16px rgba(46,107,246,.32)}
+  .shop-nm{font-size:18px;font-weight:800;color:#101623;letter-spacing:-.2px}
+  .shop-sub{font-size:12px;color:#8A93A6;font-weight:600;margin-top:1px}
+  .shop-cart{margin-left:auto;width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(20,27,45,.1);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .shop-chip{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:#fff;border:1px solid #e5eaf3;border-radius:20px;padding:7px 13px;font-size:12px;font-weight:700;color:#2b3346;box-shadow:0 2px 8px rgba(20,27,45,.05)}
+  .shop-chip b{color:#0FBE7C}
+  .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px 22px}
+  .pcard{background:#fff;border:1px solid #edeff3;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(20,27,45,.06);transition:transform .14s,box-shadow .14s}
+  .pcard:active{transform:scale(.985)}
+  .pimg{height:150px;display:flex;align-items:center;justify-content:center;position:relative}
+  .pimg svg{width:118px;height:118px;filter:drop-shadow(0 8px 14px rgba(20,27,45,.14))}
+  .pfav{position:absolute;top:9px;right:9px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.85);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;font-size:13px;color:#c3c9d6}
+  .pmeta{padding:12px 13px 13px}
+  .pname{font-size:14.5px;font-weight:800;color:#101623;line-height:1.25}
+  .psub{font-size:11.5px;color:#9aa3b2;font-weight:600;margin-top:3px}
+  .prow{display:flex;align-items:baseline;margin:9px 0 12px;white-space:nowrap}
+  .pprice b{font-size:18px;font-weight:900;color:#101623}
+  .pprice span{font-size:11.5px;font-weight:700;color:#8A93A6;margin-left:4px}
+  .prate{margin-left:auto;font-size:11.5px;font-weight:700;color:#f0a020}
+  .prate span{color:#9aa3b2;font-weight:600}
+  .pbuy{width:100%;height:44px;border:0;border-radius:13px;background:linear-gradient(135deg,#3b78ff,#1f5fef);color:#fff;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 18px rgba(31,95,239,.28);transition:filter .14s}
+  .pbuy:hover{filter:brightness(1.05)}
+  .pbuy:active{transform:translateY(1px)}
+  .shop-foot{text-align:center;color:#AEB6C6;font-size:12px;font-weight:600;padding:2px 20px 26px}
+  .shop-foot b{color:#0FBE7C}
+  .home-hero{
+    position:relative;padding:60px 24px 26px;color:#fff;overflow:hidden;
+    background:
+      radial-gradient(520px 300px at 88% 4%, rgba(120,86,255,.45), transparent 62%),
+      radial-gradient(520px 320px at 4% 22%, rgba(15,190,124,.42), transparent 60%),
+      linear-gradient(165deg,#141033 0%,#0B0E14 60%);
+  }
+  .brandbar{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.03em;color:#CDD3E4}
+  .brandbar .t49{background:linear-gradient(90deg,#7856FF,#0FBE7C);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;letter-spacing:.02em}
+  .brandbar .dotsep{opacity:.4}
+  .paydify-mark{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-weight:800;color:#fff}
+  .paydify-mark .pd{width:20px;height:20px;border-radius:6px;background:var(--green);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#0B0E14}
+  .hero-h{margin:22px 0 0;font-size:26px;line-height:1.28;font-weight:800;letter-spacing:-.2px}
+  .hero-h .hl{color:#8CF0C6}
+  .hero-sub{margin-top:14px;color:#9AA2BC;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .hero-sub .live{display:inline-flex;align-items:center;gap:5px;color:#FF6B6B;font-weight:800}
+  .hero-sub .live b{width:7px;height:7px;border-radius:50%;background:#FF6B6B;display:inline-block;animation:pulse 1.1s infinite}
+
+  .scn-wrap{padding:18px 16px 8px}
+  .scn-label{font-size:11px;font-weight:800;letter-spacing:.16em;color:#5C6480;text-transform:uppercase;margin:4px 4px 14px}
+  .scn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .scn{position:relative;border-radius:20px;padding:18px 16px 16px;cursor:pointer;overflow:hidden;background:#151A24;border:1px solid #232A38;transition:.16s;min-height:150px;display:flex;flex-direction:column}
+  .scn:active{transform:scale(.98)}
+  .scn .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:12px}
+  .scn .st{font-size:16px;font-weight:800;color:#fff}
+  .scn .ss{font-size:11.5px;font-weight:600;color:#8891A8;margin-top:5px;line-height:1.35}
+  .scn .go{margin-top:auto;padding-top:10px;font-size:12px;font-weight:800;color:#8CF0C6;display:flex;align-items:center;gap:5px}
+  .scn .glow{position:absolute;right:-40px;top:-40px;width:120px;height:120px;border-radius:50%;filter:blur(28px);opacity:.5}
+  .home-foot{padding:16px 24px 26px;text-align:center;color:#5C6480;font-size:12px;font-weight:600}
+  .home-foot b{color:#9AA2BC}
+
+  /* ===================== ORDER PAGES ===================== */
+  .op-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px}
+  .price-line{display:flex;align-items:baseline;gap:8px}
+  .price-line .big{font-size:30px;font-weight:900}
+  .price-line .cur{font-size:15px;font-weight:800;color:var(--muted)}
+  .op-h{font-size:20px;font-weight:800;letter-spacing:-.2px}
+  .op-desc{color:var(--muted);font-size:13px;font-weight:600;line-height:1.5;margin-top:8px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .chip{border:1.6px solid var(--line-2);border-radius:11px;padding:9px 15px;font-weight:700;font-size:13px;color:var(--ink-2);cursor:pointer;background:#fff}
+  .chip.sel{border-color:var(--ink);background:var(--ink);color:#fff}
+
+  /* E-commerce */
+  #screen-ecom{background:#F4F5F8}
+  .ecom-media{height:280px;flex:none;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#EDE7FF,#F4F5F8)}
+  .ecom-media .prod{font-size:130px;filter:drop-shadow(0 22px 26px rgba(80,60,160,.28))}
+  .ecom-media .tag{position:absolute;top:56px;left:20px;background:#141B2D;color:#fff}
+  .ecom-body{padding:20px 20px 8px}
+  .stars{color:#FFB020;font-size:13px;font-weight:800}
+
+  /* Live stream */
+  #screen-live{background:#0C0C12}
+  .live-video{height:300px;flex:none;position:relative;overflow:hidden;background:linear-gradient(160deg,#3A2A66,#141024 70%);display:flex;align-items:flex-end}
+  .live-video .streamer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.4))}
+  .live-top{position:absolute;top:52px;left:16px;right:16px;display:flex;align-items:center;gap:10px;z-index:2}
+  .livepill{background:#FF3B5C;color:#fff;font-size:11px;font-weight:900;padding:5px 10px;border-radius:8px;letter-spacing:.05em}
+  .streamer-chip{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);border-radius:24px;padding:5px 12px 5px 5px;color:#fff}
+  .streamer-chip .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FF6FD8,#7856FF);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .streamer-chip .nm{font-size:13px;font-weight:800}
+  .viewers{margin-left:auto;background:rgba(0,0,0,.4);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px}
+  .live-danmu{position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;gap:6px;z-index:2}
+  .dm{background:rgba(0,0,0,.35);color:#EDEDED;font-size:11px;font-weight:600;padding:5px 10px;border-radius:14px;max-width:220px}
+  .dm b{color:#8CF0C6}
+  .live-sheet{background:#14151C;flex:1;border-radius:22px 22px 0 0;margin-top:-20px;position:relative;z-index:3;padding:20px 18px}
+  .live-sheet .lh{color:#fff;font-weight:800;font-size:16px;margin:0 0 4px}
+  .live-sheet .lsub{color:#8891A8;font-size:12px;font-weight:600;margin-bottom:16px}
+  .coin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .coinpack{border:2px solid #262A36;background:#1B1D26;border-radius:16px;padding:14px 6px;text-align:center;cursor:pointer;transition:.14s}
+  .coinpack.sel{border-color:var(--green);background:#12241E}
+  .coinpack .cc{font-size:22px}
+  .coinpack .cn{color:#fff;font-weight:800;font-size:14px;margin-top:4px}
+  .coinpack .cp{color:#8891A8;font-weight:700;font-size:12px;margin-top:2px}
+
+  /* Game */
+  #screen-game{background:#0D0F1A}
+  .game-media{height:290px;flex:none;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    background:radial-gradient(400px 240px at 70% 30%,rgba(255,120,60,.4),transparent 60%),linear-gradient(160deg,#1E1636,#0D0F1A 70%)}
+  .game-media .weapon{font-size:150px;filter:drop-shadow(0 0 40px rgba(255,150,60,.6)) drop-shadow(0 20px 30px rgba(0,0,0,.5));transform:rotate(-12deg)}
+  .game-media .rarity{position:absolute;top:54px;right:18px;background:linear-gradient(90deg,#FF7A00,#FFB020);color:#1a1005;font-weight:900}
+  .game-sheet{background:#14162150;flex:1;padding:20px}
+  .game-card{background:#171A28;border:1px solid #262B3D;border-radius:20px;padding:20px}
+  .game-card .gt{color:#fff;font-size:20px;font-weight:900}
+  .game-card .gtag{color:#FFB020;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .game-attrs{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .attr{background:#1F2333;border-radius:10px;padding:8px 12px;color:#B9C0D4;font-size:12px;font-weight:700}
+  .attr b{color:#8CF0C6}
+
+  /* Exchange */
+  #screen-exchange{background:#F4F5F8}
+  .ex-head{flex:none;padding:56px 20px 26px;color:#fff;background:linear-gradient(160deg,#1652F0,#0B2E8A)}
+  .ex-head .eh{font-size:20px;font-weight:800}
+  .ex-head .eacc{margin-top:14px;background:rgba(255,255,255,.14);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+  .ex-head .eacc .av{width:40px;height:40px;border-radius:12px;background:#fff;color:#1652F0;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .ex-head .eacc .who{font-weight:800;font-size:14px}
+  .ex-head .eacc .bal{margin-left:auto;text-align:right}
+  .ex-head .eacc .bal small{display:block;font-size:11px;opacity:.75;font-weight:600}
+  .ex-body{padding:18px}
+  .amt-input{padding:22px 20px;text-align:center}
+  .amt-input .lbl{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .amt-input .field{font-size:44px;font-weight:900;margin:8px 0 2px}
+  .amt-input .field small{font-size:20px;color:var(--muted);font-weight:800}
+  .presets{display:flex;gap:8px;justify-content:center;margin-top:10px}
+
+  /* ===================== CASHIER (shared) ===================== */
+  .pad{padding:16px 18px 4px}
+  .amt-card{padding:22px 22px}
+  .amt-card .l{font-size:22px;font-weight:700}
+  .amt-card .r{font-size:26px;font-weight:800;margin-left:auto}
+  .amt-card .sm{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:4px}
+  .sec-card{padding:18px 18px 20px;margin-top:14px}
+  .sec-h{font-size:15px;font-weight:700;color:var(--muted-2);margin:0 0 14px}
+  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .seg2 .opt{border:2px solid var(--line-2);border-radius:14px;height:56px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--ink-2);cursor:pointer;background:#fff;transition:.15s}
+  .seg2 .opt.sel{border-color:var(--green);background:var(--green-soft);color:var(--ink)}
+  .tabs{background:#F2F3F6;border-radius:14px;padding:5px;display:grid;grid-template-columns:1fr 1fr;margin-bottom:16px}
+  .tabs .t{height:42px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:var(--muted);border-radius:11px;cursor:pointer;transition:.15s}
+  .tabs .t.sel{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(20,27,45,.08)}
+  .wal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px}
+  .wal{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px 10px;border:2px solid transparent;border-radius:16px;cursor:pointer;transition:.13s}
+  .wal.sel{border-color:var(--green);background:var(--green-soft)}
+  .wal.sel .check{display:flex}
+  .wal .check{display:none;position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center}
+  .wal .ic{width:48px;height:48px;display:flex}
+  .wal .ic svg{width:100%;height:100%;border-radius:13px;box-shadow:0 5px 14px rgba(20,27,45,.15),0 1px 2px rgba(20,27,45,.1)}
+  .wal.sel .ic svg{box-shadow:0 6px 18px rgba(15,190,124,.28)}
+  .wal .nm{font-size:11px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.15;height:26px;display:flex;align-items:center}
+  .hint{font-size:11.5px;color:var(--muted);text-align:center;margin:14px 4px 0;line-height:1.4}
+  .net-wrap{margin-top:14px}
+  .net-h{font-size:15px;font-weight:800;margin:0 0 12px}
+  .net-grid{display:flex;flex-wrap:wrap;gap:10px}
+  .net{border:2px solid var(--line-2);border-radius:12px;padding:10px 18px;font-weight:700;font-size:14px;color:var(--ink-2);cursor:pointer;background:#fff;transition:.13s;min-width:96px;text-align:center}
+  .net.sel{border-color:var(--green);background:var(--green-soft);color:var(--ink)}
+
+  /* qr */
+  .qr-card{padding:24px 22px 20px;margin-top:14px;text-align:center}
+  .qr-box{width:210px;height:210px;margin:6px auto 16px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:8px}
+  .qr-box svg{width:100%;height:100%}
+  .qr-box img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;border-radius:8px}
+  .qr-loading{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--muted);font-size:13px;font-weight:600}
+  .qr-loading .spin{width:34px;height:34px;border-radius:50%;border:3px solid #E7E9EF;border-top-color:var(--ink);animation:spin .8s linear infinite}
+  .qr-t1{font-size:16px;font-weight:700}
+  .qr-t2{font-size:13px;font-weight:600;color:var(--muted);margin-top:8px}
+  .qr-real{margin-top:10px;font-size:10.5px;font-weight:700;color:var(--green);letter-spacing:.02em}
+  .qr-wait{margin-top:16px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink-2)}
+  .qr-wait .pulse{width:9px;height:9px;border-radius:50%;background:#F5A623;animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* cex */
+  #screen-cex{background:#F4F5F8}
+  .ex-top{flex:none;color:#fff;padding:56px 20px 22px;position:relative}
+  .ex-brand{display:flex;align-items:center;gap:11px;font-size:19px;font-weight:800;justify-content:center}
+  .ex-logo{width:36px;height:36px;display:flex}
+  .ex-logo svg{width:100%;height:100%;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .exb{padding:18px;margin-top:-14px}
+  .pay-card{padding:22px 20px}
+  .pay-merchant{display:flex;flex-direction:column;align-items:center;gap:10px;padding-bottom:18px;border-bottom:1px solid var(--line);text-align:center}
+  .pay-merchant .mlogo{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#7856FF,#4B2FCF);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .pay-merchant .mnm{font-weight:800;font-size:17px}
+  .pay-merchant .mamt{font-weight:800;font-size:32px;margin-top:2px}
+  .pay-merchant .mamt small{font-size:15px;color:var(--muted);font-weight:700;margin-left:4px}
+  .kv{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted);font-weight:600}
+  .kv .v{margin-left:auto;font-weight:700;text-align:right}
+  .paywith{display:flex;align-items:center;gap:10px;margin-left:auto;font-weight:700}
+  .balance-ok{font-size:12px;color:var(--green);font-weight:700}
+  .powered{text-align:center;font-size:12px;color:var(--muted);margin-top:20px;font-weight:600}
+  .powered b{color:var(--green)}
+
+  /* dex checkout */
+  #screen-dex{background:#fff}
+  .browser-bar{flex:none;background:#F0F1F4;padding:52px 12px 10px;display:flex;align-items:center;gap:10px}
+  .url-pill{flex:1;background:#fff;border-radius:20px;height:36px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:13px;color:var(--ink-2);font-weight:600;box-shadow:inset 0 0 0 1px #E3E6EC}
+  .tabcount{width:24px;height:24px;border:1.6px solid var(--ink-2);border-radius:6px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .co-body{padding:8px 22px 22px}
+  .co-title{text-align:center;font-size:22px;font-weight:800;margin:14px 0 18px}
+  .co-sec{font-size:13px;color:var(--muted);font-weight:600;margin:4px 0 4px}
+  .co-total{display:flex;align-items:baseline;padding:16px 0 4px;border-top:1px solid var(--line);margin-top:6px}
+  .co-total .k{font-size:16px;font-weight:800}
+  .co-total .v{margin-left:auto;font-size:22px;font-weight:800}
+  .co-note{font-size:12px;color:var(--muted);text-align:right;font-weight:600}
+  .chip-net{display:inline-flex;align-items:center;gap:6px}
+  .chip-net .cd{width:16px;height:16px;border-radius:50%;background:#627EEA;display:inline-block}
+
+  /* pin */
+  .overlay{position:absolute;inset:0;z-index:60;background:rgba(15,18,25,.5);display:none;align-items:flex-end;backdrop-filter:blur(2px)}
+  .overlay.show{display:flex;animation:fade .2s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{width:100%;background:#fff;border-radius:26px 26px 0 0;padding:12px 22px calc(26px + env(safe-area-inset-bottom));transform:translateY(100%);animation:up .3s forwards cubic-bezier(.22,.61,.36,1)}
+  @keyframes up{to{transform:none}}
+  .grab{width:40px;height:5px;border-radius:3px;background:#E1E4EA;margin:2px auto 14px}
+  .sheet h3{margin:0;text-align:center;font-size:18px;font-weight:800}
+  .psub{text-align:center;color:var(--muted);font-size:13px;margin:6px 0 4px;font-weight:600}
+  .dots{display:flex;justify-content:center;gap:14px;margin:22px 0 8px}
+  .dots .d{width:15px;height:15px;border-radius:50%;border:2px solid #CBD1DC;transition:.15s}
+  .dots .d.on{background:var(--ink);border-color:var(--ink)}
+  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .key{height:56px;border-radius:16px;background:#F4F5F8;font-size:23px;font-weight:700;color:var(--ink);border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.1s}
+  .key:active{background:#E7E9EF;transform:scale(.97)}
+  .key.blank{background:transparent;pointer-events:none}
+  .key.act{background:transparent;font-size:17px;color:var(--muted)}
+  .paying{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 0 10px}
+  .spin{width:42px;height:42px;border-radius:50%;border:4px solid #E7E9EF;border-top-color:var(--ink);animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* success */
+  #screen-success{background:#F4F5F8;align-items:center;justify-content:center;text-align:center}
+  .ok-wrap{padding:36px 30px;display:flex;flex-direction:column;align-items:center;width:100%}
+  .ok-ring{width:96px;height:96px;border-radius:50%;background:var(--green-soft);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:pop .4s cubic-bezier(.2,1.2,.4,1)}
+  .ok-ring .c{width:66px;height:66px;border-radius:50%;background:var(--green);color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(15,190,124,.4)}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+  .ok-h{font-size:24px;font-weight:800}
+  .ok-p{color:var(--muted);font-size:14px;font-weight:600;margin-top:8px;line-height:1.5;max-width:280px}
+  .ok-pill{margin:22px 0 4px;background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px 20px;display:flex;align-items:center;gap:12px;width:100%;max-width:300px}
+  .ok-pill .ing{font-size:30px}
+  .ok-pill .t{text-align:left}
+  .ok-pill .t b{font-size:16px}
+  .ok-pill .t span{display:block;color:var(--muted);font-size:12px;font-weight:600}
+  .collect{margin-top:14px;background:#FFF7E8;border:1px dashed #F0C05A;border-radius:14px;padding:12px 16px;font-size:13px;font-weight:700;color:#8A5A00;max-width:300px;display:none}
+  .collect b{font-family:ui-monospace,Menlo,monospace;letter-spacing:.05em}
+
+  /* ===================== redesigned order pages ===================== */
+  .topnav{position:absolute;top:44px;left:0;right:0;height:46px;z-index:20;display:flex;align-items:center;gap:6px;padding:0 12px}
+  .topnav .nbtn{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 3px 10px rgba(20,27,45,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:var(--ink);flex:none}
+  .topnav .ntitle{font-weight:800;font-size:16px;flex:1;text-align:center}
+  .topnav .nsp{width:34px;flex:none}
+  .cartbadge{position:absolute;top:-3px;right:-3px;background:#FF3B5C;color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+
+  /* e-commerce */
+  #screen-ecom{background:#fff}
+  .gallery{height:340px;flex:none;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 18%,#F3EEFF,#EDE7FF 45%,#E4DBFF 100%)}
+  .gallery .prod{font-size:150px;filter:drop-shadow(0 26px 30px rgba(90,60,170,.3))}
+  .ribbon{position:absolute;top:64px;left:0;background:linear-gradient(90deg,#FF3B5C,#FF7A00);color:#fff;font-size:12px;font-weight:800;padding:6px 14px 6px 12px;border-radius:0 20px 20px 0;box-shadow:0 6px 16px rgba(255,60,90,.3)}
+  .collect-chip{position:absolute;top:64px;right:14px;background:rgba(20,27,45,.9);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;backdrop-filter:blur(4px)}
+  .gdots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+  .gdots i{width:6px;height:6px;border-radius:50%;background:rgba(20,27,45,.2)}
+  .gdots i.on{width:18px;border-radius:4px;background:var(--ink)}
+  .pinfo{padding:18px 20px 8px}
+  .pprice{display:flex;align-items:baseline;gap:9px}
+  .pprice .now{font-size:30px;font-weight:900;color:#FF3B5C}
+  .pprice .now small{font-size:15px;font-weight:800;color:#FF3B5C;margin-left:2px}
+  .pprice .was{font-size:14px;color:var(--muted-2);text-decoration:line-through;font-weight:600}
+  .pprice .off{font-size:11px;font-weight:800;color:#FF3B5C;background:#FFE9EE;padding:2px 7px;border-radius:6px}
+  .psold{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+  .ptitle{font-size:18px;font-weight:800;line-height:1.35;margin:12px 0 8px}
+  .prate{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);font-weight:600}
+  .prate .st{color:#FFB020;font-weight:800;letter-spacing:1px}
+  .prate .rn{color:var(--ink);font-weight:800}
+  .prate .av{display:flex;margin-left:auto}
+  .prate .av i{width:18px;height:18px;border-radius:50%;margin-left:-6px;border:1.5px solid #fff;display:inline-block}
+  .pship{display:flex;align-items:center;gap:10px;background:#F4F5F8;border-radius:14px;padding:12px 14px;margin-top:14px}
+  .pship .pi{font-size:20px}
+  .pship .pt{font-size:12.5px;font-weight:700;color:var(--ink)}
+  .pship .pt span{display:block;color:var(--muted);font-weight:600;font-size:11.5px;margin-top:1px}
+  .pship .go{margin-left:auto;color:var(--muted-2)}
+  .vlabel{font-size:13px;font-weight:800;margin:18px 0 10px}
+  .vlabel b{color:var(--muted);font-weight:600;margin-left:4px}
+  .cdots{display:flex;gap:10px}
+  .cdot{width:34px;height:34px;border-radius:10px;cursor:pointer;border:2px solid transparent;box-shadow:inset 0 0 0 2px #fff}
+  .cdot.sel{border-color:var(--ink)}
+  .review{background:#F9FAFB;border-radius:14px;padding:13px 15px;margin-top:18px}
+  .review .rh{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+  .review .rh .ra{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#7856FF,#0FBE7C)}
+  .review .rh .st{color:#FFB020;margin-left:auto;font-size:11px}
+  .review .rt{font-size:13px;color:var(--ink-2);margin-top:7px;line-height:1.45}
+  .pbar{display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}
+  .btn-out{flex:1;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:30px;font-weight:800;font-size:15px;cursor:pointer;height:54px}
+  .pbar .btn-dark{flex:1.6;height:54px}
+
+  /* livestream */
+  #screen-live{background:#000;padding-top:0}
+  .lvbg{position:absolute;inset:0;overflow:hidden;
+    background:radial-gradient(90% 60% at 50% 30%,#4B2A7A,#241041 55%,#0A0510 100%)}
+  .lvbg .subj{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);font-size:150px;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))}
+  .lvbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,transparent 22%,transparent 55%,rgba(0,0,0,.75) 100%)}
+  .lvtop{position:absolute;top:52px;left:12px;right:12px;z-index:6;display:flex;align-items:center;gap:8px}
+  .lvcard{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.42);backdrop-filter:blur(8px);border-radius:24px;padding:4px 5px 4px 5px}
+  .lvcard .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#FF6FD8,#7856FF);display:flex;align-items:center;justify-content:center;font-size:16px}
+  .lvcard .nm{color:#fff;font-size:13px;font-weight:800;line-height:1}
+  .lvcard .nm span{display:block;color:#D9C6FF;font-size:10px;font-weight:600;margin-top:2px}
+  .lvfollow{background:#FF3B5C;color:#fff;border:0;border-radius:20px;font-size:12px;font-weight:800;padding:7px 13px;cursor:pointer}
+  .lvcount{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .lvpill{background:rgba(0,0,0,.42);backdrop-filter:blur(8px);color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;display:flex;align-items:center;gap:4px}
+  .lvpill.live{background:#FF3B5C}
+  .lvclose{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.42);color:#fff;border:0;font-size:16px;cursor:pointer}
+  .lvrail{position:absolute;right:12px;bottom:210px;z-index:6;display:flex;flex-direction:column;gap:18px;align-items:center}
+  .lvrail .ract{display:flex;flex-direction:column;align-items:center;gap:3px;color:#fff}
+  .lvrail .ric{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:21px}
+  .lvrail .rn{font-size:11px;font-weight:700}
+  .heart{position:absolute;bottom:250px;right:24px;font-size:22px;z-index:5;animation:floatup 3.4s ease-in infinite;opacity:0}
+  @keyframes floatup{0%{opacity:0;transform:translateY(0) scale(.6)}12%{opacity:1}100%{opacity:0;transform:translateY(-200px) translateX(-34px) scale(1.25)}}
+  .lvchat{position:absolute;left:12px;bottom:196px;z-index:6;display:flex;flex-direction:column;gap:6px;max-width:64%}
+  .lvchat .cm{background:rgba(0,0,0,.34);backdrop-filter:blur(2px);color:#EDEDED;font-size:12px;font-weight:500;padding:6px 11px;border-radius:14px;width:fit-content}
+  .lvchat .cm b{color:#8CF0C6;font-weight:800}
+  .lvchat .cm.gift b{color:#FFD028}
+  .giftsheet{position:absolute;left:0;right:0;bottom:0;z-index:7;background:linear-gradient(180deg,#191A22,#14151C);border-radius:22px 22px 0 0;padding:16px 16px 8px;box-shadow:0 -10px 30px rgba(0,0,0,.4)}
+  .giftsheet .gh{display:flex;align-items:center;margin-bottom:12px}
+  .giftsheet .gh b{color:#fff;font-size:15px;font-weight:800}
+  .giftsheet .gh .bal{margin-left:auto;color:#8CF0C6;font-size:12px;font-weight:700;background:rgba(15,190,124,.12);padding:5px 10px;border-radius:20px}
+  .coin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .coinpack{position:relative;border:2px solid #262A36;background:#1B1D26;border-radius:16px;padding:15px 6px 12px;text-align:center;cursor:pointer;transition:.14s}
+  .coinpack.sel{border-color:var(--green);background:#12241E}
+  .coinpack .cc{font-size:26px}
+  .coinpack .cn{color:#fff;font-weight:800;font-size:15px;margin-top:5px}
+  .coinpack .cp{color:#8891A8;font-weight:700;font-size:12px;margin-top:2px}
+  .coinpack .bonus{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#FF7A00,#FFB020);color:#20140a;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap}
+
+  /* game */
+  #screen-game{background:#0A0B14;padding-top:0}
+  .gbg{position:absolute;inset:0;overflow:hidden;background:radial-gradient(70% 50% at 50% 34%,rgba(255,120,50,.5),transparent 62%),radial-gradient(120% 90% at 50% 120%,#241636,#0A0B14 60%)}
+  .gsheen{position:absolute;top:36%;left:50%;width:230px;height:230px;transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(255,190,120,.28),transparent 40%);animation:spin 6s linear infinite}
+  .ghero{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-size:160px;filter:drop-shadow(0 0 40px rgba(255,150,60,.7)) drop-shadow(0 22px 26px rgba(0,0,0,.55));z-index:2}
+  .gbalance{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px}
+  .gsheet{position:absolute;left:0;right:0;bottom:0;z-index:3;background:linear-gradient(180deg,rgba(16,18,30,0),#101120 22%,#101120);padding:0 20px}
+  .grarity2{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(90deg,#FF7A00,#FFB020);color:#1a1005;font-weight:900;font-size:11px;letter-spacing:.06em;padding:5px 12px;border-radius:20px;box-shadow:0 6px 16px rgba(255,140,40,.35)}
+  .gname{color:#fff;font-size:23px;font-weight:900;margin:12px 0 4px;letter-spacing:-.3px}
+  .gsub{color:#8891A8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .gtimer{display:inline-flex;align-items:center;gap:6px;color:#FFB020;font-size:12px;font-weight:800;background:rgba(255,176,32,.12);padding:6px 12px;border-radius:20px;margin-top:14px}
+  .gstats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+  .gstat{background:#191C2C;border:1px solid #262B3D;border-radius:14px;padding:11px 8px;text-align:center}
+  .gstat .si{font-size:18px}
+  .gstat .sv{color:#8CF0C6;font-weight:900;font-size:15px;margin-top:3px}
+  .gstat .sk{color:#7C86A0;font-size:10px;font-weight:700;text-transform:uppercase;margin-top:1px}
+  .gpricebar{display:flex;align-items:center;gap:12px;margin-top:18px}
+  .gpricebar .gp{font-size:26px;font-weight:900;color:#fff}
+  .gpricebar .gp small{font-size:14px;color:#8891A8;font-weight:800;margin-left:3px}
+  .gpricebar .gwas{font-size:13px;color:#6B7488;text-decoration:line-through;font-weight:700}
+
+  /* exchange deposit */
+  #screen-exchange{background:#F4F5F8}
+  .dhead{flex:none;padding:52px 18px 20px;background:#fff;border-bottom:1px solid var(--line)}
+  .dtitle{text-align:center;font-size:17px;font-weight:800;margin-bottom:16px}
+  .dacct{display:flex;align-items:center;gap:11px;background:linear-gradient(120deg,#1652F0,#0B2E8A);border-radius:16px;padding:14px 16px;color:#fff}
+  .dacct .lg{width:38px;height:38px;border-radius:11px;background:#fff;color:#1652F0;font-weight:900;font-size:17px;display:flex;align-items:center;justify-content:center}
+  .dacct .who{font-weight:800;font-size:14px}
+  .dacct .who span{display:block;font-size:11px;opacity:.8;font-weight:600;margin-top:1px}
+  .dacct .bal{margin-left:auto;text-align:right}
+  .dacct .bal small{display:block;font-size:10.5px;opacity:.8;font-weight:600}
+  .dacct .bal b{font-size:16px}
+  .dbody{padding:16px 18px}
+  .drow{background:#fff;border-radius:16px;padding:15px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);cursor:pointer;margin-bottom:12px}
+  .drow .dlbl{font-size:12px;color:var(--muted);font-weight:700}
+  .drow .dval{margin-left:auto;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
+  .drow .go{color:var(--muted-2);font-size:18px}
+  .coin-ic{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:12px}
+  .damt-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px 18px}
+  .damt-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700}
+  .damt-row{display:flex;align-items:baseline;gap:6px;margin:8px 0 2px}
+  .damt-row .amt{font-size:38px;font-weight:900;line-height:1}
+  .damt-row input.amt{flex:1;min-width:0;border:0;outline:none;background:transparent;padding:0;font-family:inherit;color:var(--ink);letter-spacing:-.5px;caret-color:var(--green)}
+  .damt-row input.amt::placeholder{color:var(--muted-2)}
+  .damt-row .u{font-size:18px;font-weight:800;color:var(--muted)}
+  .damt-row .max{margin-left:auto;color:var(--green);font-weight:800;font-size:13px;background:var(--green-soft);padding:5px 12px;border-radius:20px;cursor:pointer}
+  .dchips{display:flex;gap:8px;margin-top:14px}
+  .dchips .chip{flex:1;text-align:center;border:1.6px solid var(--line-2);border-radius:11px;padding:11px 0;font-weight:800;font-size:14px;color:var(--ink-2);cursor:pointer;background:#fff}
+  .dchips .chip.sel{border-color:var(--green);background:var(--green-soft);color:var(--ink)}
+  .dinfo{margin-top:14px;background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:6px 18px}
+  .dinfo .kv{border-color:var(--line)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar" id="statusbar">
+    <span class="sb-time">10:49</span>
+    <span class="sb-right">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M8.5 2.6c2.8 0 5.4 1 7.3 2.8l-1.5 1.6C12.8 5.6 10.7 4.8 8.5 4.8S4.2 5.6 2.7 7L1.2 5.4C3.1 3.6 5.7 2.6 8.5 2.6z"/><path d="M8.5 6.4c1.7 0 3.2.6 4.4 1.7l-1.6 1.6c-.7-.7-1.7-1.1-2.8-1.1s-2.1.4-2.8 1.1L4.1 8.1C5.3 7 6.8 6.4 8.5 6.4z"/><circle cx="8.5" cy="10.6" r="1.4"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13"><rect x="1" y="1" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" stroke-width="1" opacity=".38"/><rect x="2.6" y="2.6" width="18.8" height="7.8" rx="1.6" fill="currentColor"/><rect x="24.2" y="4.4" width="1.7" height="4.2" rx=".85" fill="currentColor" opacity=".45"/></svg>
+    </span>
+  </div>
+  <div class="island"></div>
+
+  <div class="screens">
+
+    <!-- ============ HOME ============ -->
+    <section class="screen active" id="screen-home">
+      <div class="home-scroll" style="background:#fff">
+        <div class="shop-hero">
+          <div class="shop-top">
+            <div class="shop-logo">D</div>
+            <div>
+              <div class="shop-nm">DCS Store</div>
+              <div class="shop-sub">Official merch · ships worldwide</div>
+            </div>
+            <div class="shop-cart">🛍️</div>
+          </div>
+          <span class="shop-chip">🪙 Pay with <b>USDT / USDC</b> · instant checkout</span>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+        <div class="shop-foot">Powered by <b>Paydify</b> · Accept crypto from 500+ wallets &amp; exchanges</div>
+      </div>
+    </section>
+
+    <!-- ============ 1. E-COMMERCE ============ -->
+    <section class="screen" id="screen-ecom">
+      <div class="topnav">
+        <button class="nbtn" onclick="show('screen-home')">‹</button>
+        <span class="ntitle">TOKEN2049 Store</span>
+        <button class="nbtn" style="font-size:15px">⌕</button>
+        <button class="nbtn" style="position:relative">🛒<span class="cartbadge">1</span></button>
+      </div>
+      <div class="scroll">
+        <div class="gallery">
+          <span class="ribbon">🔥 -34% Booth Special</span>
+          <span class="collect-chip">🏪 Collect at Booth K12</span>
+          <span class="prod">🧥</span>
+          <span class="gdots"><i class="on"></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="pinfo">
+          <div class="pprice">
+            <span class="now">39.00<small>USDT</small></span>
+            <span class="was">59.00</span>
+            <span class="off">-34%</span>
+            <span class="psold">🔥 328 sold</span>
+          </div>
+          <div class="ptitle">TOKEN2049 Official Hoodie — Limited Edition</div>
+          <div class="prate">
+            <span class="st">★★★★★</span><span class="rn">4.9</span><span>· 312 ratings</span>
+            <span class="av"><i style="background:#7856FF"></i><i style="background:#0FBE7C"></i><i style="background:#FF7A00"></i></span>
+          </div>
+          <div class="pship">
+            <span class="pi">🏪</span>
+            <span class="pt">Collect at the counter<span>Booth K12 · ready in ~5 min after payment</span></span>
+            <span class="go">›</span>
+          </div>
+          <div class="vlabel">Size <b>Select one</b></div>
+          <div class="chips" id="ecomSize">
+            <div class="chip">S</div><div class="chip sel">M</div><div class="chip">L</div><div class="chip">XL</div>
+          </div>
+          <div class="vlabel">Color <b>Midnight</b></div>
+          <div class="cdots">
+            <span class="cdot sel" style="background:#141B2D"></span>
+            <span class="cdot" style="background:#6C5CE7"></span>
+            <span class="cdot" style="background:#0FBE7C"></span>
+            <span class="cdot" style="background:#E9EAEE"></span>
+          </div>
+          <div class="review">
+            <div class="rh"><span class="ra"></span><b>@degen_max</b><span class="st">★★★★★</span></div>
+            <div class="rt">“Insane quality, the embroidery is 🔥. Paid in USDT and picked it up in 3 min.”</div>
+          </div>
+        </div>
+      </div>
+      <div class="pbar">
+        <button class="btn-dark" style="flex:1" onclick="goCashier('ecom')">Buy Now · Pay with crypto</button>
+      </div>
+    </section>
+
+    <!-- ============ 2. LIVE STREAM ============ -->
+    <section class="screen" id="screen-live">
+      <div class="lvbg"><span class="subj">🎤</span></div>
+      <div class="lvtop">
+        <span class="lvcard">
+          <span class="av">👩‍🎤</span>
+          <span class="nm">CryptoQueen<span>♪ Live DJ Set · 1.2M followers</span></span>
+          <button class="lvfollow">Follow</button>
+        </span>
+        <span class="lvcount">
+          <span class="lvpill live">● LIVE</span>
+          <span class="lvpill">👁 12.4k</span>
+          <button class="lvclose" onclick="show('screen-home')">✕</button>
+        </span>
+      </div>
+
+      <div class="heart" style="animation-delay:.2s">❤️</div>
+      <div class="heart" style="right:44px;animation-delay:1.1s">💜</div>
+      <div class="heart" style="right:14px;animation-delay:2s">💖</div>
+
+      <div class="lvrail">
+        <span class="ract"><span class="ric">❤️</span><span class="rn">28.4k</span></span>
+        <span class="ract"><span class="ric">💬</span><span class="rn">3.1k</span></span>
+        <span class="ract"><span class="ric">🎁</span><span class="rn">Gift</span></span>
+        <span class="ract"><span class="ric">↗</span><span class="rn">Share</span></span>
+      </div>
+
+      <div class="lvchat">
+        <span class="cm"><b>@degen_max</b> this set is insane 🔥</span>
+        <span class="cm gift"><b>@0xLuna</b> sent 🚀 Rocket ×3</span>
+        <span class="cm"><b>@satoshi_jr</b> USDT gang 💚</span>
+      </div>
+
+      <div class="giftsheet">
+        <div class="gh"><b>Send a gift 🎁</b><span class="bal">🪙 Balance 120</span></div>
+        <div class="coin-grid" id="coinGrid">
+          <div class="coinpack" data-amt="1.99" data-coins="200 Coins"><div class="cc">🪙</div><div class="cn">200</div><div class="cp">$1.99</div></div>
+          <div class="coinpack sel" data-amt="4.99" data-coins="500 Coins"><span class="bonus">+10% BONUS</span><div class="cc">💎</div><div class="cn">500</div><div class="cp">$4.99</div></div>
+          <div class="coinpack" data-amt="9.99" data-coins="1200 Coins"><span class="bonus">BEST VALUE</span><div class="cc">🚀</div><div class="cn">1200</div><div class="cp">$9.99</div></div>
+        </div>
+        <div class="footbar" style="padding:14px 0 calc(10px + env(safe-area-inset-bottom));background:none">
+          <button class="btn-dark btn-green" onclick="goCashier('live')">Recharge &amp; Send Gift</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. GAME ITEM ============ -->
+    <section class="screen" id="screen-game">
+      <div class="gbg"></div>
+      <div class="gsheen"></div>
+      <span class="ghero">🗡️</span>
+      <div class="topnav">
+        <button class="nbtn" onclick="show('screen-home')">‹</button>
+        <span class="ntitle" style="color:#fff">Item Shop</span>
+        <span class="gbalance">💎 1,240</span>
+      </div>
+      <div class="gsheet">
+        <span class="grarity2">✦ LEGENDARY</span>
+        <div class="gname">Dragon Blade — Inferno</div>
+        <div class="gsub">Legend Game · Weapon Skin</div>
+        <span class="gtimer">⏳ Flash offer ends in 02:14:37</span>
+        <div class="gstats">
+          <div class="gstat"><div class="si">⚔️</div><div class="sv">+240</div><div class="sk">Attack</div></div>
+          <div class="gstat"><div class="si">🔥</div><div class="sv">Fire</div><div class="sk">Element</div></div>
+          <div class="gstat"><div class="si">💥</div><div class="sv">Burn</div><div class="sk">Effect</div></div>
+        </div>
+        <div class="gpricebar">
+          <span class="gp">9.99<small>USDT</small></span>
+          <span class="gwas">15.99</span>
+          <span style="margin-left:auto;color:#8CF0C6;font-size:12px;font-weight:800">⚡ Equip instantly</span>
+        </div>
+        <div class="footbar" style="padding:16px 0 calc(16px + env(safe-area-inset-bottom));background:none">
+          <button class="btn-dark btn-green" onclick="goCashier('game')">Purchase</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 4. EXCHANGE ============ -->
+    <section class="screen" id="screen-exchange">
+      <div class="dhead">
+        <div class="topnav" style="top:44px">
+          <button class="nbtn" onclick="show('screen-home')">‹</button>
+          <span class="ntitle">Deposit</span>
+          <button class="nbtn" style="font-size:15px">⤶</button>
+        </div>
+        <div style="height:8px"></div>
+        <div class="dacct">
+          <span class="lg">D</span>
+          <span class="who">DCS Exchange<span>UID 8842•••057 · Verified</span></span>
+          <span class="bal"><small>Spot balance</small><b>128.40 USDT</b></span>
+        </div>
+      </div>
+      <div class="dbody">
+        <div class="drow">
+          <span class="coin-ic" style="background:#26A17B">₮</span>
+          <span class="dlbl">Coin</span>
+          <span class="dval">USDT <span class="go">›</span></span>
+        </div>
+        <div class="drow">
+          <span class="coin-ic" style="background:#F0B90B;color:#181A1F">◆</span>
+          <span class="dlbl">Network</span>
+          <span class="dval" style="font-size:14px">BNB Smart Chain (BEP20) <span class="go">›</span></span>
+        </div>
+        <div class="damt-card">
+          <div class="damt-top"><span>Deposit amount</span><span>Available 128.40</span></div>
+          <div class="damt-row"><input class="amt" id="exVal" type="text" inputmode="decimal" autocomplete="off" value="50" placeholder="0"/><span class="u">USDT</span><span class="max" id="exMax">MAX</span></div>
+          <div class="dchips" id="exPresets">
+            <div class="chip" data-amt="20">20</div>
+            <div class="chip sel" data-amt="50">50</div>
+            <div class="chip" data-amt="100">100</div>
+            <div class="chip" data-amt="200">200</div>
+          </div>
+        </div>
+        <div class="dinfo">
+          <div class="kv"><span class="k">Deposit limit</span><span class="v">No min / max</span></div>
+          <div class="kv"><span class="k">Credited to</span><span class="v">Spot Wallet</span></div>
+          <div class="kv"><span class="k">Est. arrival</span><span class="v">≈ instant · 1 confirmation</span></div>
+        </div>
+      </div>
+      <div class="footbar">
+        <button class="btn-dark" onclick="goCashier('exchange')">Deposit now</button>
+      </div>
+    </section>
+
+    <!-- ============ CASHIER ============ -->
+    <section class="screen" id="screen-cashier">
+      <button class="backbtn" onclick="show(state.scenario.screen)">‹</button>
+      <div class="fab"><span class="b"></span></div>
+      <div class="scroll">
+        <div class="pad" style="padding-top:52px">
+          <div class="card amt-card row">
+            <span><span class="l">Amount</span><span class="sm" id="cashItem">Legend Game</span></span>
+            <span class="r" id="cashAmt">$1.76</span>
+          </div>
+          <div class="card sec-card">
+            <div class="sec-h">Payment Currency</div>
+            <div class="seg2" id="curSeg">
+              <div class="opt sel" data-cur="USDT">USDT</div>
+              <div class="opt" data-cur="USDC">USDC</div>
+            </div>
+          </div>
+          <div class="card sec-card">
+            <div class="tabs" id="tabs">
+              <div class="t sel" data-tab="exchange">Exchange</div>
+              <div class="t" data-tab="web3">Web3 Wallet</div>
+            </div>
+            <div id="exGrid" class="wal-grid"></div>
+            <div id="w3Grid" class="wal-grid" style="display:none"></div>
+            <div id="w3Hint" class="hint" style="display:none"></div>
+            <div id="netWrap" class="net-wrap" style="display:none">
+              <div class="net-h">Network</div>
+              <div class="net-grid" id="netGrid"><!-- filled per selected wallet by renderNetworks() --></div>
+            </div>
+          </div>
+          <div style="height:12px"></div>
+        </div>
+      </div>
+      <div class="footbar">
+        <button class="btn-dark" onclick="toQR()">Confirm Payment&nbsp;&nbsp;<span id="confAmt">$1.76</span></button>
+      </div>
+    </section>
+
+    <!-- ============ QR ============ -->
+    <section class="screen" id="screen-qr">
+      <button class="backbtn" onclick="show('screen-cashier')">‹</button>
+      <div class="fab"><span class="b"></span></div>
+      <div class="scroll">
+        <div class="pad" style="padding-top:52px">
+          <div class="card amt-card row"><span class="l">Amount</span><span class="r" id="qrAmt">$1.76</span></div>
+          <div class="card qr-card">
+            <div class="qr-box" id="qrBox"></div>
+            <div class="qr-t1">Scan with your camera or wallet app to pay</div>
+            <div class="qr-t2" id="qrMeta">MetaMask · USDT · BNB Chain</div>
+            <div class="qr-real" id="qrReal">● Real order · scan to pay</div>
+            <div class="qr-wait"><span class="pulse"></span> Waiting for payment…</div>
+          </div>
+        </div>
+      </div>
+      <div class="footbar">
+        <button class="btn-dark" onclick="openPaymentPage()">Open payment page</button>
+      </div>
+    </section>
+
+    <!-- ============ CEX PAY ============ -->
+    <section class="screen" id="screen-cex">
+      <div class="scroll">
+        <div class="ex-top" id="exTop">
+          <button class="backbtn" style="top:52px;background:rgba(255,255,255,.2);color:#fff" onclick="show('screen-qr')">‹</button>
+          <div class="ex-brand"><span class="ex-logo" id="exLogo">B</span><span id="exName">Binance</span> Pay</div>
+        </div>
+        <div class="exb">
+          <div class="card pay-card">
+            <div class="pay-merchant">
+              <div class="mlogo" id="cexMlogo">🛍️</div>
+              <div class="mnm" id="cexMerchant">TOKEN2049 Store</div>
+              <div class="mamt"><span id="cexAmt">1.76</span> <small id="cexCur">USDT</small></div>
+            </div>
+            <div class="kv"><span class="k">Item</span><span class="v" id="cexItem">—</span></div>
+            <div class="kv"><span class="k">Pay with</span><span class="paywith"><span id="cexCur2">USDT</span> <span class="balance-ok">Balance ✓</span></span></div>
+            <div class="kv"><span class="k">Order no.</span><span class="v" id="cexOrder">PLY-2609-88421</span></div>
+          </div>
+          <div style="height:16px"></div>
+          <button class="btn-dark" onclick="openPin()">Confirm &amp; Pay <span id="cexBtnAmt">1.76 USDT</span></button>
+          <div class="powered">Secured by <b id="cexBrandFoot">Binance</b> Pay</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEX CHECKOUT ============ -->
+    <section class="screen" id="screen-dex">
+      <div class="scroll">
+        <div class="browser-bar">
+          <button class="backbtn" style="position:static;top:auto;left:auto" onclick="show('screen-qr')">‹</button>
+          <div class="url-pill"><span>🔒</span>…payrouter.paydify.com</div>
+          <div class="tabcount">6</div>
+        </div>
+        <div class="co-body">
+          <div class="co-title">Order details</div>
+          <div class="co-sec">Payment details</div>
+          <div>
+            <div class="kv"><span class="k">Item</span><span class="v" id="dexItem">—</span></div>
+            <div class="kv"><span class="k">Payment amount</span><span class="v"><span id="dexAmt">1.76</span> <span id="dexCur">USDC</span></span></div>
+            <div class="kv"><span class="k">Paid to</span><span class="v" id="dexMerchant">TOKEN2049 Store</span></div>
+            <div class="kv"><span class="k">Network</span><span class="v"><span class="chip-net" id="dexNet"><span class="cd"></span> Ethereum</span> ›</span></div>
+            <div class="kv"><span class="k">Gas fee</span><span class="v" style="color:var(--danger)">≈ 0.00000443 ETH</span></div>
+            <div class="kv"><span class="k">Remaining payment time</span><span class="v" id="dexTimer">00h : 29m : 45s</span></div>
+          </div>
+          <div class="co-total"><span class="k">Total payment</span><span class="v">≈ $<span id="dexTotal">1.77</span></span></div>
+          <div class="co-note"><span id="dexBreak">1.76 USDC</span> + gas</div>
+          <div style="height:20px"></div>
+          <button class="btn-dark" onclick="openPin()">Continue</button>
+          <div class="powered">Powered by <b>Paydify</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SUCCESS ============ -->
+    <section class="screen" id="screen-success">
+      <div class="ok-wrap">
+        <div class="ok-ring"><div class="c">✓</div></div>
+        <div class="ok-h">Payment Successful</div>
+        <div class="ok-p" id="okMsg">Your payment has been received.</div>
+        <div class="ok-pill">
+          <span class="ing" id="okIcon">🛍️</span>
+          <span class="t"><b id="okItem">—</b><span id="okMerchant">—</span></span>
+        </div>
+        <div class="collect" id="okCollect">🏪 Show this at <b>Booth K12</b> · Code <b id="okCode">PLY-2609-88421</b></div>
+        <div style="width:100%;max-width:300px;margin-top:18px"><button class="btn-dark" onclick="show('screen-home')">Continue shopping</button></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== PIN ===== -->
+  <div class="overlay" id="pinOverlay">
+    <div class="sheet" id="pinSheet">
+      <div class="grab"></div>
+      <div id="pinMain">
+        <h3>Enter Payment Password</h3>
+        <div class="psub" id="pinSub">Pay 1.76 USDT</div>
+        <div class="dots" id="pinDots"></div>
+        <div class="keys" id="pinKeys"></div>
+      </div>
+      <div id="pinPaying" style="display:none">
+        <div class="paying"><div class="spin"></div><div style="font-weight:700">Processing payment…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- real QR (points to the live merchant checkout) ---------- */
+const QR_MERCHANT_SVG = '<svg viewBox="0 0 37 37" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="37" height="37" fill="#fff"/><path d="M2 2h7v1h-7zM11 2h2v1h-2zM14 2h1v1h-1zM16 2h3v1h-3zM20 2h2v1h-2zM25 2h1v1h-1zM28 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h2v1h-2zM14 3h4v1h-4zM19 3h1v1h-1zM22 3h2v1h-2zM25 3h2v1h-2zM28 3h1v1h-1zM34 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM19 4h1v1h-1zM24 4h1v1h-1zM28 4h1v1h-1zM30 4h3v1h-3zM34 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM11 5h1v1h-1zM13 5h1v1h-1zM15 5h1v1h-1zM18 5h1v1h-1zM26 5h1v1h-1zM28 5h1v1h-1zM30 5h3v1h-3zM34 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM13 6h2v1h-2zM16 6h2v1h-2zM21 6h1v1h-1zM24 6h2v1h-2zM28 6h1v1h-1zM30 6h3v1h-3zM34 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM13 7h2v1h-2zM17 7h2v1h-2zM20 7h2v1h-2zM23 7h2v1h-2zM28 7h1v1h-1zM34 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h1v1h-1zM28 8h7v1h-7zM11 9h1v1h-1zM13 9h1v1h-1zM16 9h2v1h-2zM19 9h1v1h-1zM22 9h2v1h-2zM26 9h1v1h-1zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM12 10h1v1h-1zM15 10h2v1h-2zM18 10h1v1h-1zM21 10h3v1h-3zM26 10h2v1h-2zM29 10h1v1h-1zM2 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM9 11h1v1h-1zM15 11h1v1h-1zM18 11h2v1h-2zM22 11h1v1h-1zM24 11h1v1h-1zM26 11h4v1h-4zM34 11h1v1h-1zM2 12h3v1h-3zM7 12h2v1h-2zM11 12h1v1h-1zM15 12h2v1h-2zM18 12h4v1h-4zM23 12h2v1h-2zM26 12h1v1h-1zM28 12h3v1h-3zM32 12h1v1h-1zM34 12h1v1h-1zM4 13h1v1h-1zM6 13h1v1h-1zM10 13h2v1h-2zM13 13h4v1h-4zM18 13h1v1h-1zM21 13h5v1h-5zM28 13h1v1h-1zM30 13h2v1h-2zM2 14h2v1h-2zM5 14h1v1h-1zM8 14h1v1h-1zM10 14h1v1h-1zM12 14h2v1h-2zM16 14h2v1h-2zM19 14h2v1h-2zM23 14h1v1h-1zM26 14h3v1h-3zM31 14h1v1h-1zM33 14h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h3v1h-3zM15 15h1v1h-1zM18 15h1v1h-1zM20 15h2v1h-2zM23 15h2v1h-2zM26 15h3v1h-3zM30 15h2v1h-2zM33 15h2v1h-2zM2 16h2v1h-2zM7 16h4v1h-4zM13 16h3v1h-3zM18 16h3v1h-3zM25 16h1v1h-1zM27 16h7v1h-7zM4 17h2v1h-2zM9 17h1v1h-1zM11 17h3v1h-3zM15 17h1v1h-1zM17 17h1v1h-1zM19 17h5v1h-5zM25 17h1v1h-1zM28 17h1v1h-1zM30 17h1v1h-1zM33 17h1v1h-1zM6 18h5v1h-5zM12 18h1v1h-1zM16 18h1v1h-1zM19 18h1v1h-1zM21 18h4v1h-4zM28 18h1v1h-1zM30 18h1v1h-1zM33 18h1v1h-1zM4 19h2v1h-2zM7 19h1v1h-1zM9 19h6v1h-6zM16 19h1v1h-1zM18 19h1v1h-1zM23 19h1v1h-1zM25 19h2v1h-2zM29 19h1v1h-1zM31 19h1v1h-1zM33 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM7 20h4v1h-4zM14 20h2v1h-2zM22 20h1v1h-1zM24 20h1v1h-1zM28 20h1v1h-1zM32 20h1v1h-1zM34 20h1v1h-1zM2 21h1v1h-1zM4 21h3v1h-3zM14 21h1v1h-1zM16 21h1v1h-1zM18 21h2v1h-2zM23 21h1v1h-1zM25 21h1v1h-1zM28 21h2v1h-2zM34 21h1v1h-1zM6 22h5v1h-5zM12 22h2v1h-2zM16 22h1v1h-1zM20 22h1v1h-1zM23 22h1v1h-1zM26 22h2v1h-2zM33 22h2v1h-2zM3 23h2v1h-2zM7 23h1v1h-1zM9 23h1v1h-1zM11 23h2v1h-2zM14 23h3v1h-3zM19 23h2v1h-2zM22 23h3v1h-3zM26 23h3v1h-3zM31 23h1v1h-1zM33 23h2v1h-2zM2 24h3v1h-3zM6 24h6v1h-6zM13 24h1v1h-1zM18 24h2v1h-2zM21 24h1v1h-1zM24 24h1v1h-1zM26 24h7v1h-7zM34 24h1v1h-1zM3 25h1v1h-1zM6 25h1v1h-1zM9 25h5v1h-5zM17 25h1v1h-1zM21 25h4v1h-4zM27 25h2v1h-2zM30 25h2v1h-2zM34 25h1v1h-1zM2 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM8 26h1v1h-1zM10 26h1v1h-1zM12 26h2v1h-2zM15 26h5v1h-5zM21 26h1v1h-1zM23 26h1v1h-1zM25 26h7v1h-7zM33 26h1v1h-1zM10 27h4v1h-4zM16 27h1v1h-1zM19 27h5v1h-5zM26 27h1v1h-1zM30 27h2v1h-2zM34 27h1v1h-1zM2 28h7v1h-7zM11 28h1v1h-1zM13 28h2v1h-2zM16 28h1v1h-1zM18 28h1v1h-1zM24 28h1v1h-1zM26 28h1v1h-1zM28 28h1v1h-1zM30 28h4v1h-4zM2 29h1v1h-1zM8 29h1v1h-1zM10 29h1v1h-1zM12 29h1v1h-1zM14 29h2v1h-2zM18 29h2v1h-2zM22 29h2v1h-2zM26 29h1v1h-1zM30 29h1v1h-1zM2 30h1v1h-1zM4 30h3v1h-3zM8 30h1v1h-1zM11 30h1v1h-1zM15 30h1v1h-1zM17 30h4v1h-4zM22 30h3v1h-3zM26 30h6v1h-6zM34 30h1v1h-1zM2 31h1v1h-1zM4 31h3v1h-3zM8 31h1v1h-1zM10 31h2v1h-2zM13 31h2v1h-2zM16 31h1v1h-1zM19 31h3v1h-3zM23 31h3v1h-3zM28 31h1v1h-1zM30 31h1v1h-1zM32 31h1v1h-1zM2 32h1v1h-1zM4 32h3v1h-3zM8 32h1v1h-1zM14 32h1v1h-1zM18 32h1v1h-1zM20 32h1v1h-1zM22 32h3v1h-3zM26 32h1v1h-1zM30 32h3v1h-3zM34 32h1v1h-1zM2 33h1v1h-1zM8 33h1v1h-1zM11 33h1v1h-1zM17 33h4v1h-4zM23 33h4v1h-4zM31 33h1v1h-1zM2 34h7v1h-7zM10 34h1v1h-1zM12 34h1v1h-1zM16 34h3v1h-3zM20 34h1v1h-1zM23 34h2v1h-2zM26 34h3v1h-3zM30 34h2v1h-2zM33 34h1v1h-1z" fill="#141B2D"/></svg>';
+
+
+/* ---------- scenarios ---------- */
+const SCENARIOS = {
+  shop:{key:'shop',screen:'screen-home',icon:'🛍️',title:'Shopping',sub:'',
+        grad:'linear-gradient(135deg,#2E6BF6,#1652F0)',merchant:'DCS Store',
+        item:'',amount:'0.10',collect:false,
+        okMsg:'Payment received. Your order is confirmed and on its way.',okLabel:'order paid'},
+  ecom:{key:'ecom',screen:'screen-ecom',icon:'🛍️',title:'Shopping',sub:'Buy merch · collect at the counter',
+        grad:'linear-gradient(135deg,#7856FF,#4B2FCF)',merchant:'TOKEN2049 Store',
+        item:'TOKEN2049 Hoodie (M)',amount:'39.00',collect:true,
+        okMsg:'Order confirmed. Show the code at the booth to collect your hoodie.',okLabel:'added to your order'},
+  live:{key:'live',screen:'screen-live',icon:'📺',title:'Live Stream',sub:'Top up coins for your creator',
+        grad:'linear-gradient(135deg,#FF6FD8,#7856FF)',merchant:'StreamLive · @CryptoQueen',
+        item:'500 Coins',amount:'4.99',
+        okMsg:'Coins credited! Your gift is flying to @CryptoQueen 🚀',okLabel:'sent to @CryptoQueen'},
+  game:{key:'game',screen:'screen-game',icon:'🎮',title:'Gaming',sub:'Grab in-game items instantly',
+        grad:'linear-gradient(135deg,#FF7A00,#FFB020)',merchant:'PLOY GAMES',
+        item:'Dragon Blade — Inferno',amount:'9.99',
+        okMsg:'Item unlocked! Equip it now in Legend Game.',okLabel:'added to your inventory'},
+  exchange:{key:'exchange',screen:'screen-exchange',icon:'💱',title:'Exchange',sub:'Deposit stablecoins to your account',
+        grad:'linear-gradient(135deg,#1652F0,#0B2E8A)',merchant:'DCS Exchange',
+        item:'Spot wallet deposit',amount:'50.00',
+        okMsg:'Deposit received and credited to your Spot wallet.',okLabel:'credited to Spot wallet'},
+};
+
+// pm = Paydify createPayment payMethod1 (wallet) enum. '' = not sent (falls back to wallet-list order).
+const EXCHANGES=[
+  // Exchange tab uses each exchange's PAY enum → the QR is that exchange's own native pay code.
+  // (probed live: BINANCE→app.binance.com, OKX→okx://pay, BYBIT→i.bybit.com, GATEIO→gate.com,
+  //  KUCOIN→kucoin.com native; BITGET binds but routes via the Paydify checkout — no native redirect.)
+  {id:'binance',nm:'Binance',color:'#F3BA2F',mark:'B',tc:'#181A1F',pm:'BINANCE'},
+  {id:'okx',nm:'OKX',color:'#111111',mark:'OKX',fs:'13px',pm:'OKX'},
+  {id:'bitget',nm:'Bitget',color:'#00D0C3',mark:'B',pm:'BITGET'},
+  {id:'bybit',nm:'Bybit',color:'#171A1F',mark:'By',tc:'#F7A600',pm:'BYBIT'},
+  {id:'gate',nm:'Gate.io',color:'#2354E6',mark:'G',pm:'GATEIO'},
+  {id:'kucoin',nm:'KuCoin',color:'#01BC8D',mark:'K',pm:'KUCOIN'},
+];
+// chains = every network this wallet can actually bind for THIS merchant (probed live against createPayment).
+// Final options shown = wallet.chains ∩ CURRENCY_CHAINS[currency] (see renderNetworks).
+const WALLETS=[
+  {id:'bitgetw',nm:'Bitget Wallet',color:'#0052FF',mark:'▶',pm:'BGW',chains:['bnb','eth','sol','trx','base','morph']},
+  {id:'okxw',nm:'OKX Wallet',color:'#111111',mark:'OKX',fs:'12px',pm:'OKXWALLET',chains:['bnb','eth','sol','trx','base','morph']},
+  {id:'tp',nm:'TokenPocket',color:'#2980FE',mark:'TP',fs:'15px',pm:'TOKENPOCKET',chains:['bnb','eth','sol','trx','base','morph']},
+  {id:'metamask',nm:'MetaMask',color:'#F5841F',mark:'🦊',img:1,pm:'METAMASK',chains:['bnb','eth','sol','base','morph']},
+  {id:'coinbase',nm:'Coinbase Wallet',color:'#2E6BF6',mark:'●',pm:'COINBASEWALLET',chains:['bnb','eth','sol','base','morph']},
+  {id:'imtoken',nm:'imToken',color:'#11C4D4',mark:'🍃',img:1,pm:'IMTOKEN',chains:['bnb','eth','trx','base','morph']},
+  {id:'trust',nm:'Trust Wallet',color:'#3375BB',mark:'🛡️',img:1,pm:'TRUSTWALLET',chains:['bnb','eth','sol','base']},
+  {id:'rainbow',nm:'Rainbow',color:'#FF5CAA',mark:'🌈',img:1,pm:'RAINBOW',chains:['bnb','eth','base']},
+  {id:'phantom',nm:'Phantom',color:'#AB9FF2',mark:'👻',img:1,pm:'PHANTOM',chains:['eth','sol','base']},
+];
+// payMethod2 (blockchain) enum ↔ demo Network label
+const CHAIN={'BNB Chain':'bnb','Ethereum':'eth','Solana':'sol','Tron':'trx','Base':'base','Morph':'morph'};
+const NET_LABEL={bnb:'BNB Chain',eth:'Ethereum',sol:'Solana',trx:'Tron',base:'Base',morph:'Morph'};
+// chains this merchant accepts per settlement stablecoin (probed live): USDC adds Base; USDT has no Base,
+// and Kaia is a valid enum but not yet configured for this merchant, so it's omitted.
+const CURRENCY_CHAINS={USDT:['bnb','eth','sol','trx','morph'],USDC:['bnb','eth','sol','trx','base','morph']};
+
+/* ---------- brand logos (inline SVG, offline) ---------- */
+const LOGOS={
+  binance:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#fff"/><g fill="#F0B90B" transform="translate(24 24) rotate(45)"><rect x="-4" y="-4" width="8" height="8" rx="1.6"/><rect x="-4" y="-15" width="8" height="8" rx="1.6"/><rect x="-4" y="7" width="8" height="8" rx="1.6"/><rect x="-15" y="-4" width="8" height="8" rx="1.6"/><rect x="7" y="-4" width="8" height="8" rx="1.6"/></g></svg>',
+  okx:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#0C0C0C"/><g fill="#fff"><rect x="12" y="12" width="8" height="8" rx="1"/><rect x="28" y="12" width="8" height="8" rx="1"/><rect x="20" y="20" width="8" height="8" rx="1"/><rect x="12" y="28" width="8" height="8" rx="1"/><rect x="28" y="28" width="8" height="8" rx="1"/></g></svg>',
+  okxw:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#0C0C0C"/><g fill="#fff"><rect x="12" y="12" width="8" height="8" rx="1"/><rect x="28" y="12" width="8" height="8" rx="1"/><rect x="20" y="20" width="8" height="8" rx="1"/><rect x="12" y="28" width="8" height="8" rx="1"/><rect x="28" y="28" width="8" height="8" rx="1"/></g></svg>',
+  bitget:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#00E4D0"/><path d="M17 14 L31 24 L17 34" fill="none" stroke="#0B1D2A" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  bybit:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#17181E"/><text x="24" y="32" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="800" fill="#F7A600" text-anchor="middle">b</text></svg>',
+  gate:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#2354E6"/><path d="M32 18.5 A9 9 0 1 0 32 29.5 L24.5 29.5 L24.5 24 L33 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  kucoin:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#01BC8D"/><path d="M18 13 L18 35 M18 24 L30 13 M18 24 L30 35" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  bitgetw:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#1E63FF"/><path d="M19 14 L34 24 L19 34 Z" fill="#fff"/></svg>',
+  tp:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#2E7BF6"/><text x="24" y="30" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="800" fill="#fff" text-anchor="middle">TP</text></svg>',
+  metamask:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#fff"/><g transform="translate(24 26)"><path d="M-12 -14 L-2.5 -8 L-6 -1 Z" fill="#E2761B"/><path d="M12 -14 L2.5 -8 L6 -1 Z" fill="#E2761B"/><path d="M-6 -1 L-2.5 -8 L2.5 -8 L6 -1 L4.5 9 L-4.5 9 Z" fill="#E4761B"/><path d="M-9 5 L-4.5 9 L-4.5 12 L-9.5 7 Z" fill="#CD6116"/><path d="M9 5 L4.5 9 L4.5 12 L9.5 7 Z" fill="#CD6116"/><path d="M-3.6 3 L3.6 3 L2.6 9 L-2.6 9 Z" fill="#F4F4F4"/><circle cx="-3.6" cy="-2.5" r="1.6" fill="#233447"/><circle cx="3.6" cy="-2.5" r="1.6" fill="#233447"/></g></svg>',
+  coinbase:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#0052FF"/><circle cx="24" cy="24" r="13" fill="none" stroke="#fff" stroke-width="3.4"/><rect x="19.5" y="19.5" width="9" height="9" rx="1.8" fill="#fff"/></svg>',
+  imtoken:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#08C7D9"/><path d="M13 31 C13 20 23 16 33 19 C25 17.5 19.2 20 19.6 27 C19.9 31 24 32 29 29" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>',
+  trust:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#fff"/><path d="M24 10 L36 15 C36 27 30.5 34.5 24 38 C17.5 34.5 12 27 12 15 Z" fill="#3375BB"/><path d="M24 14.5 L32 17.7 C32 26.5 28 32 24 34.7 Z" fill="#fff" opacity=".22"/></svg>',
+  rainbow:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#0B3AAE"/><g fill="none" stroke-linecap="round" stroke-width="3.4"><path d="M11 33 a15 15 0 0 1 26 0" stroke="#FF5C00"/><path d="M15 33 a11 11 0 0 1 18 0" stroke="#FFD028"/><path d="M19 33 a7 7 0 0 1 10 0" stroke="#03B95F"/><path d="M22.6 33 a3.4 3.4 0 0 1 2.8 0" stroke="#0AA1FF"/></g></svg>',
+  phantom:'<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#AB9FF2"/><path d="M13 27 a11 11 0 0 1 22 0 L35 33 Q33.2 35.8 31.4 33 Q29.6 35.8 27.8 33 Q26 35.8 24.2 33 Q22.4 35.8 20.6 33 Q18.8 35.8 17 33 Q15.2 35.8 13 33 Z" fill="#fff"/><ellipse cx="20" cy="25" rx="1.7" ry="2.4" fill="#534BB1"/><ellipse cx="27" cy="25" rx="1.7" ry="2.4" fill="#534BB1"/></svg>',
+};
+
+const state={scenario:SCENARIOS.ecom,amount:'39.00',currency:'USDT',tab:'exchange',
+  wallet:EXCHANGES[0],walletKind:'cex',network:'BNB Chain'};
+
+const $=id=>document.getElementById(id);
+function show(id){
+  if(id!=='screen-qr') stopPolling();     // only poll payment status while the QR is on screen
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  $(id).querySelector('.scroll,.home-scroll')?.scrollTo(0,0);
+  const dark=['screen-live','screen-game'].includes(id);
+  $('statusbar').classList.toggle('on-dark',dark);
+}
+
+/* ---------- live payment status polling (callback → /api/status → flip to success) ---------- */
+let pollTimer=null;
+function stopPolling(){ if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
+function startPolling(txnId){
+  stopPolling();
+  if(!txnId) return;
+  pollTimer=setInterval(async()=>{
+    try{
+      const r=await fetch('api/status?txnId='+encodeURIComponent(txnId));
+      const d=await r.json();
+      if(d.state==='PAID'){ stopPolling(); if(document.querySelector('.screen.active')?.id==='screen-qr') toSuccess(); }
+      else if(d.state==='FAILED'||d.state==='TIMEOUT'){ stopPolling(); }
+    }catch(e){/* keep polling */}
+  },2500);
+}
+
+/* ---------- home ---------- */
+/* ---------- shop products (all 0.10 USDT) — rich inline SVG illustrations ---------- */
+const ICON={
+  tee:`<svg viewBox="0 0 200 200"><defs><linearGradient id="teeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfcfe"/><stop offset="1" stop-color="#dee3ec"/></linearGradient></defs><path d="M72 40 L54 48 L34 68 L50 89 L64 79 L64 166 Q100 175 136 166 L136 79 L150 89 L166 68 L146 48 L128 40 C126 54 114 62 100 62 C86 62 74 54 72 40 Z" fill="url(#teeG)" stroke="#cfd5df" stroke-width="2" stroke-linejoin="round"/><path d="M72 40 C78 53 88 60 100 60 C112 60 122 53 128 40" fill="none" stroke="#c3c9d5" stroke-width="3.4"/><path d="M63 94 Q66 132 64 163" fill="none" stroke="#d3d9e2" stroke-width="1.6" opacity=".8"/><path d="M137 94 Q134 132 136 163" fill="none" stroke="#d3d9e2" stroke-width="1.6" opacity=".8"/><path d="M87 98 Q100 106 113 98" fill="none" stroke="#dbe0e9" stroke-width="1.4" opacity=".7"/></svg>`,
+  cap:`<svg viewBox="0 0 200 200"><defs><linearGradient id="beaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1C065"/><stop offset="1" stop-color="#D89A2E"/></linearGradient></defs><circle cx="100" cy="50" r="10" fill="#F5D488"/><path d="M54 124 C54 58 146 58 146 124 Z" fill="url(#beaG)"/><g stroke="#C88A22" stroke-width="2.6" opacity=".4" stroke-linecap="round" fill="none"><path d="M70 76 C68 94 68 110 70 124"/><path d="M84 67 C82 92 82 108 84 124"/><path d="M100 64 L100 124"/><path d="M116 67 C118 92 118 108 116 124"/><path d="M130 76 C132 94 132 110 130 124"/></g><rect x="49" y="120" width="102" height="27" rx="13.5" fill="#F5D488"/><g stroke="#D8A63C" stroke-width="2.2" opacity=".5"><line x1="62" y1="124" x2="62" y2="143"/><line x1="77" y1="124" x2="77" y2="143"/><line x1="92" y1="124" x2="92" y2="143"/><line x1="108" y1="124" x2="108" y2="143"/><line x1="123" y1="124" x2="123" y2="143"/><line x1="138" y1="124" x2="138" y2="143"/></g></svg>`,
+  tote:`<svg viewBox="0 0 200 200"><defs><linearGradient id="totG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEE5CF"/><stop offset="1" stop-color="#D6C8A9"/></linearGradient></defs><path d="M70 70 C70 42 96 42 96 70" fill="none" stroke="#9c8f6c" stroke-width="6.5" stroke-linecap="round"/><path d="M104 70 C104 42 130 42 130 70" fill="none" stroke="#9c8f6c" stroke-width="6.5" stroke-linecap="round"/><path d="M50 66 L150 66 L142 172 L58 172 Z" fill="url(#totG)" stroke="#c2b491" stroke-width="2" stroke-linejoin="round"/><line x1="53" y1="87" x2="147" y2="87" stroke="#c7b994" stroke-width="1.6" opacity=".55"/><rect x="83" y="104" width="34" height="42" rx="4" fill="#cabd9c" opacity=".5"/><path d="M91 122 h18 M91 129 h18 M91 136 h11" stroke="#b3a680" stroke-width="1.8" opacity=".6"/></svg>`,
+  sock:`<svg viewBox="0 0 200 200"><defs><linearGradient id="soG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6ecf5"/></linearGradient></defs><g transform="rotate(9 96 110)"><path d="M96 46 H124 V116 C124 127 129 132 139 136 L155 143 C166 147 167 158 161 166 L158 172 C153 179 144 178 135 174 L103 160 C92 155 90 146 90 136 V52 Z" fill="#d7deea" stroke="#c3cad7" stroke-width="2" stroke-linejoin="round"/></g><g transform="rotate(-9 88 108)"><path d="M74 44 H102 V114 C102 125 107 130 117 134 L133 141 C144 145 145 156 139 164 L136 170 C131 177 122 176 113 172 L81 158 C70 153 68 144 68 134 V50 Z" fill="url(#soG)" stroke="#cdd4e0" stroke-width="2" stroke-linejoin="round"/><rect x="68" y="44" width="34" height="12" fill="#3b78ff" opacity=".85"/><rect x="68" y="58" width="34" height="4" fill="#3b78ff" opacity=".5"/></g></svg>`,
+};
+const PRODUCTS=[
+  {name:'Cotton crew T-shirt',sub:'Heavyweight · unisex',rev:'312',bg:'linear-gradient(135deg,#eef1f6,#e2e7f0)',icon:ICON.tee},
+  {name:'Ribbed knit cap',sub:'Warm merino blend',rev:'188',bg:'linear-gradient(135deg,#fdf3db,#f8e7bf)',icon:ICON.cap},
+  {name:'Heavy canvas tote',sub:'16oz cotton canvas',rev:'204',bg:'linear-gradient(135deg,#f5efe1,#ebe2cd)',icon:ICON.tote},
+  {name:'Cotton crew socks',sub:'Combed cotton · pair',rev:'156',bg:'linear-gradient(135deg,#eaf4ff,#daeafb)',icon:ICON.sock},
+];
+function renderHome(){
+  $('shopGrid').innerHTML=PRODUCTS.map((p,i)=>`
+    <div class="pcard">
+      <div class="pimg" style="background:${p.bg}"><span class="pfav">♡</span>${p.icon}</div>
+      <div class="pmeta">
+        <div class="pname">${p.name}</div>
+        <div class="psub">${p.sub}</div>
+        <div class="prow"><span class="pprice"><b>0.10</b><span>USDT</span></span><span class="prate">★ 4.9</span></div>
+        <button class="pbuy" onclick="buyNow(${i})">Buy now</button>
+      </div>
+    </div>`).join('');
+}
+function buyNow(i){
+  SCENARIOS.shop.item=PRODUCTS[i].name;
+  SCENARIOS.shop.amount='0.10';
+  goCashier('shop');
+}
+
+/* ---------- order-page pickers ---------- */
+$('ecomSize').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  $('ecomSize').querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');
+  SCENARIOS.ecom.item='TOKEN2049 Hoodie ('+c.textContent+')';});
+document.querySelector('.cdots')?.addEventListener('click',e=>{const d=e.target.closest('.cdot');if(!d)return;
+  d.parentElement.querySelectorAll('.cdot').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');});
+$('coinGrid').addEventListener('click',e=>{const c=e.target.closest('.coinpack');if(!c)return;
+  $('coinGrid').querySelectorAll('.coinpack').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');
+  SCENARIOS.live.amount=c.dataset.amt;SCENARIOS.live.item=c.dataset.coins;});
+function exMarkChip(v){$('exPresets').querySelectorAll('.chip').forEach(x=>x.classList.toggle('sel',x.dataset.amt===v));}
+$('exPresets').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  $('exVal').value=c.dataset.amt;SCENARIOS.exchange.amount=c.dataset.amt;exMarkChip(c.dataset.amt);});
+// free amount entry — no min/max, digits + one decimal point only
+$('exVal').addEventListener('input',e=>{
+  let v=e.target.value.replace(/[^0-9.]/g,'');
+  const p=v.split('.'); if(p.length>2) v=p[0]+'.'+p.slice(1).join('');
+  e.target.value=v;
+  SCENARIOS.exchange.amount = v==='' ? '0' : v;
+  exMarkChip(v);
+});
+$('exMax').addEventListener('click',()=>{$('exVal').value='128.40';SCENARIOS.exchange.amount='128.40';exMarkChip('128.40');});
+
+/* ---------- enter cashier ---------- */
+function goCashier(key){
+  state.scenario=SCENARIOS[key];
+  state.amount=state.scenario.amount;
+  state.currency='USDT';state.tab='exchange';state.wallet=EXCHANGES[0];state.walletKind='cex';state.network='BNB Chain';
+  // reset cashier ui
+  $('tabs').querySelectorAll('.t').forEach(t=>t.classList.toggle('sel',t.dataset.tab==='exchange'));
+  $('curSeg').querySelectorAll('.opt').forEach(o=>o.classList.toggle('sel',o.dataset.cur==='USDT'));
+  $('exGrid').style.display='grid';$('w3Grid').style.display='none';$('w3Hint').style.display='none';$('netWrap').style.display='none';
+  $('cashItem').textContent=state.scenario.merchant+' · '+state.scenario.item;
+  renderWallets();syncAmounts();show('screen-cashier');
+}
+function syncAmounts(){const a='$'+state.amount;['cashAmt','confAmt','qrAmt'].forEach(id=>$(id).textContent=a);}
+
+/* ---------- wallets ---------- */
+function tile(w){
+  return `<div class="wal" data-id="${w.id}"><span class="check">✓</span><span class="ic">${LOGOS[w.id]||''}</span><span class="nm">${w.nm}</span></div>`;
+}
+function renderWallets(){
+  $('exGrid').innerHTML=EXCHANGES.map(tile).join('');
+  $('w3Grid').innerHTML=WALLETS.map(tile).join('');
+  markWallet();bind('exGrid',EXCHANGES,'cex');bind('w3Grid',WALLETS,'dex');
+}
+function bind(g,list,kind){$(g).querySelectorAll('.wal').forEach(el=>el.onclick=()=>{
+  state.wallet=list.find(w=>w.id===el.dataset.id);state.walletKind=kind;markWallet();if(kind==='dex'){w3hint();renderNetworks();}});}
+function markWallet(){document.querySelectorAll('.wal').forEach(el=>el.classList.toggle('sel',el.dataset.id===state.wallet.id));}
+function w3hint(){$('w3Hint').textContent=`${state.wallet.nm} must complete payment in the Paydify checkout`;}
+// Show networks = wallet's supported chains ∩ the selected currency's chains; auto-fix an invalid pick.
+function renderNetworks(){
+  const curChains=CURRENCY_CHAINS[state.currency]||CURRENCY_CHAINS.USDT;
+  const chains=(state.wallet.chains||['bnb','eth']).filter(ch=>curChains.includes(ch));
+  if(!chains.includes(CHAIN[state.network])) state.network=NET_LABEL[chains[0]];
+  $('netGrid').innerHTML=chains.map(ch=>{const L=NET_LABEL[ch];
+    return `<div class="net ${L===state.network?'sel':''}" data-net="${L}">${L}</div>`;}).join('');
+}
+
+$('tabs').addEventListener('click',e=>{const t=e.target.closest('.t');if(!t)return;
+  state.tab=t.dataset.tab;$('tabs').querySelectorAll('.t').forEach(x=>x.classList.remove('sel'));t.classList.add('sel');
+  const ex=state.tab==='exchange';
+  $('exGrid').style.display=ex?'grid':'none';$('w3Grid').style.display=ex?'none':'grid';
+  $('w3Hint').style.display=ex?'none':'block';$('netWrap').style.display=ex?'none':'block';
+  if(ex){state.wallet=EXCHANGES[0];state.walletKind='cex';}else{state.wallet=WALLETS[3];state.walletKind='dex';w3hint();renderNetworks();}
+  markWallet();});
+$('curSeg').addEventListener('click',e=>{const o=e.target.closest('.opt');if(!o)return;
+  state.currency=o.dataset.cur;$('curSeg').querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');
+  if(state.walletKind==='dex') renderNetworks();});   // currency changes which chains are available
+$('netGrid').addEventListener('click',e=>{const n=e.target.closest('.net');if(!n)return;
+  state.network=n.dataset.net;$('netGrid').querySelectorAll('.net').forEach(x=>x.classList.remove('sel'));n.classList.add('sel');});
+
+/* ---------- QR ---------- */
+function offlineQR(){
+  // no backend reachable (e.g. opened as a plain file:// instead of via the server).
+  // Show a clear warning instead of a scannable no-amount code, so nobody scans the wrong QR.
+  $('qrBox').innerHTML='<div class="qr-loading" style="gap:10px;padding:6px">'
+    +'<div style="font-size:34px">⚠️</div>'
+    +'<div style="font-weight:800;color:var(--ink);font-size:14px">Backend not running</div>'
+    +'<div style="text-align:center;line-height:1.55;color:var(--muted)">Run <b style="color:var(--ink)">server.py</b> and open<br><b style="color:var(--ink)">http://127.0.0.1:8080/</b></div></div>';
+  $('qrReal').textContent='● No live order yet — don’t scan';
+}
+async function toQR(){
+  syncAmounts();
+  const net=state.walletKind==='dex'?` · ${state.network}`:'';
+  $('qrMeta').textContent=`${state.wallet.nm} · ${state.currency}${net}`;
+  show('screen-qr');
+  // live: mint a fresh real order on the backend (secret stays server-side)
+  $('qrBox').innerHTML='<div class="qr-loading"><div class="spin"></div>Creating live order…</div>';
+  $('qrReal').textContent='● Contacting Paydify…';
+  const reqId=++toQR._n;
+  try{
+    const r=await fetch('api/pay',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({amount:state.amount,currency:state.currency,
+        payMethod1:state.wallet.pm||'',
+        payMethod2:state.walletKind==='dex'?(CHAIN[state.network]||''):'',
+        title:state.scenario.item,
+        desc:state.scenario.merchant+' · '+state.scenario.item})});
+    const d=await r.json();
+    if(reqId!==toQR._n) return;                 // a newer navigation superseded this one
+    if(!d.ok||!d.qrCode) throw new Error(d.error||'no qrCode');
+    state.liveTxn=d;
+    $('qrBox').innerHTML='<img alt="Paydify payment QR" src="'+d.qrCode+'">';
+    $('qrReal').textContent='● Live order '+d.txnId+' · scan to pay '+state.amount+' '+state.currency;
+    startPolling(d.txnId);          // flip to success automatically when the callback marks it PAID
+  }catch(e){
+    if(reqId!==toQR._n) return;
+    offlineQR();                                // no backend / call failed → non-expiring merchant link
+  }
+}
+toQR._n=0;
+function openPaymentPage(){state.walletKind==='cex'?gotoCex():gotoDex();}
+
+function gotoCex(){
+  const w=state.wallet,s=state.scenario;
+  $('exTop').style.background=`linear-gradient(160deg, ${w.color}, ${shade(w.color,-24)})`;
+  $('exTop').style.color=isLight(w.color)?'#141B2D':'#fff';
+  $('exLogo').innerHTML=LOGOS[w.id]||'';$('exName').textContent=w.nm;
+  $('cexMlogo').textContent=s.icon;$('cexMerchant').textContent=s.merchant;
+  $('cexAmt').textContent=state.amount;$('cexCur').textContent=state.currency;$('cexCur2').textContent=state.currency;
+  $('cexItem').textContent=s.item;$('cexBtnAmt').textContent=state.amount+' '+state.currency;$('cexBrandFoot').textContent=w.nm;
+  show('screen-cex');
+}
+function gotoDex(){
+  const s=state.scenario;
+  $('dexItem').textContent=s.item;$('dexMerchant').textContent=s.merchant;
+  $('dexAmt').textContent=state.amount;$('dexCur').textContent=state.currency;$('dexBreak').textContent=state.amount+' '+state.currency;
+  $('dexTotal').textContent=(parseFloat(state.amount)+0.01).toFixed(2);
+  $('dexNet').innerHTML=`<span class="cd"></span> ${state.network}`;
+  show('screen-dex');startTimer();
+}
+let timer=null;
+function startTimer(){clearInterval(timer);let s=29*60+45;
+  timer=setInterval(()=>{s--;if(s<0){clearInterval(timer);return;}
+    const m=Math.floor(s/60),ss=s%60;
+    $('dexTimer').textContent=`00h : ${String(m).padStart(2,'0')}m : ${String(ss).padStart(2,'0')}s`;},1000);}
+
+/* ---------- PIN ---------- */
+let pin='';
+function openPin(){pin='';renderDots();$('pinMain').style.display='block';$('pinPaying').style.display='none';
+  $('pinSub').textContent=`Pay ${state.amount} ${state.currency} · ${state.scenario.merchant}`;
+  $('pinOverlay').classList.add('show');
+  $('pinSheet').style.animation='none';void $('pinSheet').offsetWidth;$('pinSheet').style.animation='';}
+function closePin(){$('pinOverlay').classList.remove('show');}
+function renderKeys(){const k=['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  $('pinKeys').innerHTML=k.map(x=>x===''?'<button class="key blank"></button>':x==='⌫'?'<button class="key act" data-k="del">⌫</button>':`<button class="key" data-k="${x}">${x}</button>`).join('');}
+function renderDots(){$('pinDots').innerHTML=Array.from({length:6},(_,i)=>`<span class="d ${i<pin.length?'on':''}"></span>`).join('');}
+$('pinKeys').addEventListener('click',e=>{const b=e.target.closest('.key');if(!b||!b.dataset.k)return;
+  if(b.dataset.k==='del'){pin=pin.slice(0,-1);renderDots();return;}
+  if(pin.length>=6)return;pin+=b.dataset.k;renderDots();if(pin.length===6)setTimeout(submitPin,180);});
+function submitPin(){$('pinMain').style.display='none';$('pinPaying').style.display='block';
+  setTimeout(()=>{closePin();clearInterval(timer);toSuccess();},1500);}
+
+/* ---------- success ---------- */
+function toSuccess(){
+  const s=state.scenario;
+  $('okMsg').textContent=s.okMsg;$('okIcon').textContent=s.icon;
+  $('okItem').textContent=s.item;$('okMerchant').textContent=s.okLabel;
+  const col=$('okCollect');
+  if(s.collect){col.style.display='block';$('okCode').textContent='PLY-'+Math.floor(10000+Math.random()*89999);}
+  else col.style.display='none';
+  show('screen-success');
+}
+
+/* ---------- utils ---------- */
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function isLight(hex){const n=parseInt(hex.slice(1),16);return (0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))>170;}
+
+/* ---------- init ---------- */
+renderHome();renderKeys();
+</script>
+</body>
+</html>
