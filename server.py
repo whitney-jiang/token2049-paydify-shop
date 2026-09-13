@@ -151,13 +151,15 @@ def create_payment(amount, currency, pay1, pay2, desc, title=""):
             "qrCode": d.get("qrCode"), "state": d.get("state"), "specific": specific}
 
 
-def get_payment_status(mch):
-    """Ask Paydify for the live state of an order by mchTxnId. Returns state (upper) or None."""
+def get_payment_status(txn):
+    """Ask Paydify for the live state of an order BY txnId. Returns state (upper) or None.
+    Querying by txnId (not mchTxnId) means it does NOT depend on any in-memory map, so it keeps
+    working even if this process restarted between order creation and payment (e.g. Render cold start)."""
     key, secret, mid, aid = load_creds()
-    if not (key and secret and mch):
+    if not (key and secret and txn):
         return None
     ts = int(time.time() * 1000)
-    body_str = json.dumps({"mchTxnId": mch, "merchantAppId": aid}, separators=(",", ":"), ensure_ascii=False)
+    body_str = json.dumps({"txnId": txn, "merchantAppId": aid}, separators=(",", ":"), ensure_ascii=False)
     sig = sign(key, secret, QUERY_PATH, body_str, ts)
     req = urllib.request.Request(
         BASE + QUERY_PATH, data=body_str.encode("utf-8"), method="POST",
@@ -178,13 +180,13 @@ def get_payment_status(mch):
 
 
 def status_of(txn):
-    """Live order state for the page's poll: cached final state, else ask Paydify by mchTxnId."""
+    """Live order state for the page's poll: cached final state, else ask Paydify BY txnId
+    (stateless — survives restarts)."""
     with LOCK:
         st = ORDERS.get(txn, "UNKNOWN")
-        mch = TXN2MCH.get(txn)
     if st in FINAL:                      # already settled (via callback or a prior poll) — no re-query
         return st
-    live = get_payment_status(mch) if mch else None
+    live = get_payment_status(txn)
     if live:
         with LOCK:
             ORDERS[txn] = live
