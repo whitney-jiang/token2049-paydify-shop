@@ -75,9 +75,9 @@
   .pname{font-size:14.5px;font-weight:800;color:#101623;line-height:1.25}
   .psub{font-size:11.5px;color:#9aa3b2;font-weight:600;margin-top:3px}
   .prow{display:flex;align-items:baseline;margin:9px 0 12px;white-space:nowrap}
-  .pprice b{font-size:18px;font-weight:900;color:#101623}
-  .pprice span{font-size:11.5px;font-weight:700;color:#8A93A6;margin-left:4px}
-  .prate{margin-left:auto;font-size:11.5px;font-weight:700;color:#f0a020}
+  .pprice b{font-size:17px;font-weight:900;color:#101623}
+  .pprice span{font-size:10.5px;font-weight:700;color:#8A93A6;margin-left:4px}
+  .prate{margin-left:auto;padding-left:8px;font-size:11px;font-weight:700;color:#f0a020}
   .prate span{color:#9aa3b2;font-weight:600}
   .pbuy{width:100%;height:44px;border:0;border-radius:13px;background:linear-gradient(135deg,#3b78ff,#1f5fef);color:#fff;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 18px rgba(31,95,239,.28);transition:filter .14s}
   .pbuy:hover{filter:brightness(1.05)}
@@ -934,7 +934,7 @@ function renderHome(){
       <div class="pmeta">
         <div class="pname">${p.name}</div>
         <div class="psub">${p.sub}</div>
-        <div class="prow"><span class="pprice"><b>0.10</b><span>USDT</span></span><span class="prate">★ 4.9</span></div>
+        <div class="prow"><span class="pprice"><b>0.10</b><span>USDT/USDC</span></span><span class="prate">★ 4.9</span></div>
         <button class="pbuy" onclick="buyNow(${i})">Buy now</button>
       </div>
     </div>`).join('');
