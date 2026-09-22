@@ -6,6 +6,6 @@ COPY server.py shop-demo.html TOKEN2049-Paydify-demo.html ./
 ENV HOST=0.0.0.0 \
     PORT=8080 \
     DEFAULT_PAGE=shop-demo.html \
-    FIXED_AMOUNT=0.10
+    FIXED_AMOUNT=0.20
 EXPOSE 8080
 CMD ["python3", "server.py"]

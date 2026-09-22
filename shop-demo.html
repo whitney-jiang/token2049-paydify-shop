@@ -57,7 +57,7 @@
   .home-scroll{flex:1;overflow-y:auto}
   .home-scroll::-webkit-scrollbar{display:none}
   /* ---- shop ---- */
-  .shop-hero{padding:56px 20px 18px;background:linear-gradient(135deg,#eef3ff 0%,#f6f8fd 60%,#fff 100%);border-bottom:1px solid #eef0f5}
+  .shop-hero{padding:26px 20px 18px;background:linear-gradient(135deg,#eef3ff 0%,#f6f8fd 60%,#fff 100%);border-bottom:1px solid #eef0f5}
   .shop-top{display:flex;align-items:center;gap:11px}
   .shop-logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#2E6BF6,#1652F0);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;box-shadow:0 6px 16px rgba(46,107,246,.32)}
   .shop-nm{font-size:18px;font-weight:800;color:#101623;letter-spacing:-.2px}
@@ -813,7 +813,7 @@ const QR_MERCHANT_SVG = '<svg viewBox="0 0 37 37" xmlns="http://www.w3.org/2000/
 const SCENARIOS = {
   shop:{key:'shop',screen:'screen-home',icon:'🛍️',title:'Shopping',sub:'',
         grad:'linear-gradient(135deg,#2E6BF6,#1652F0)',merchant:'DCS Store',
-        item:'',amount:'0.10',collect:false,
+        item:'',amount:'0.20',collect:false,
         okMsg:'Payment received. Your order is confirmed and on its way.',okLabel:'order paid'},
   ecom:{key:'ecom',screen:'screen-ecom',icon:'🛍️',title:'Shopping',sub:'Buy merch · collect at the counter',
         grad:'linear-gradient(135deg,#7856FF,#4B2FCF)',merchant:'TOKEN2049 Store',
@@ -895,6 +895,10 @@ function show(id){
   $(id).querySelector('.scroll,.home-scroll')?.scrollTo(0,0);
   const dark=['screen-live','screen-game'].includes(id);
   $('statusbar').classList.toggle('on-dark',dark);
+  // hide the fake phone status bar (time / wifi / battery) + island on the shop home page
+  const home = id==='screen-home';
+  $('statusbar').style.display = home ? 'none' : 'flex';
+  const isl=document.querySelector('.island'); if(isl) isl.style.display = home ? 'none' : 'block';
 }
 
 /* ---------- live payment status polling (callback → /api/status → flip to success) ---------- */
@@ -934,14 +938,14 @@ function renderHome(){
       <div class="pmeta">
         <div class="pname">${p.name}</div>
         <div class="psub">${p.sub}</div>
-        <div class="prow"><span class="pprice"><b>0.10</b><span>USDT/USDC</span></span><span class="prate">★ 4.9</span></div>
+        <div class="prow"><span class="pprice"><b>0.20</b><span>USDT/USDC</span></span><span class="prate">★ 4.9</span></div>
         <button class="pbuy" onclick="buyNow(${i})">Buy now</button>
       </div>
     </div>`).join('');
 }
 function buyNow(i){
   SCENARIOS.shop.item=PRODUCTS[i].name;
-  SCENARIOS.shop.amount='0.10';
+  SCENARIOS.shop.amount='0.20';
   goCashier('shop');
 }
 
@@ -1128,6 +1132,8 @@ function isLight(hex){const n=parseInt(hex.slice(1),16);return (0.299*(n>>16)+0.
 
 /* ---------- init ---------- */
 renderHome();renderKeys();
+/* initial screen is the shop home → hide the fake status bar + island there */
+$('statusbar').style.display='none'; document.querySelector('.island').style.display='none';
 </script>
 </body>
 </html>
