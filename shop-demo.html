@@ -188,34 +188,34 @@
   .presets{display:flex;gap:8px;justify-content:center;margin-top:10px}
 
   /* ===================== CASHIER (shared) ===================== */
-  .pad{padding:16px 18px 4px}
-  .amt-card{padding:22px 22px}
-  .amt-card .l{font-size:22px;font-weight:700}
-  .amt-card .r{font-size:26px;font-weight:800;margin-left:auto}
-  .amt-card .sm{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:4px}
-  .sec-card{padding:18px 18px 20px;margin-top:14px}
-  .sec-h{font-size:15px;font-weight:700;color:var(--muted-2);margin:0 0 14px}
-  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .seg2 .opt{border:2px solid var(--line-2);border-radius:14px;height:56px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--ink-2);cursor:pointer;background:#fff;transition:.15s}
+  .pad{padding:14px 16px 4px}
+  .amt-card{padding:15px 18px}
+  .amt-card .l{font-size:16px;font-weight:700}
+  .amt-card .r{font-size:21px;font-weight:800;margin-left:auto}
+  .amt-card .sm{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px}
+  .sec-card{padding:13px 16px 15px;margin-top:11px}
+  .sec-h{font-size:12px;font-weight:800;color:var(--muted-2);margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em}
+  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg2 .opt{border:1.6px solid var(--line-2);border-radius:12px;height:42px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--ink-2);cursor:pointer;background:#fff;transition:.15s}
   .seg2 .opt.sel{border-color:var(--green);background:var(--green-soft);color:var(--ink)}
-  .tabs{background:#F2F3F6;border-radius:14px;padding:5px;display:grid;grid-template-columns:1fr 1fr;margin-bottom:16px}
-  .tabs .t{height:42px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:var(--muted);border-radius:11px;cursor:pointer;transition:.15s}
+  .tabs{background:#F2F3F6;border-radius:12px;padding:4px;display:grid;grid-template-columns:1fr 1fr;margin-bottom:12px}
+  .tabs .t{height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13.5px;color:var(--muted);border-radius:9px;cursor:pointer;transition:.15s}
   .tabs .t.sel{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(20,27,45,.08)}
-  .wal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px}
-  .wal{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px 10px;border:2px solid transparent;border-radius:16px;cursor:pointer;transition:.13s}
+  .wal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px 2px}
+  .wal{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 2px 7px;border:1.6px solid transparent;border-radius:13px;cursor:pointer;transition:.13s}
   .wal.sel{border-color:var(--green);background:var(--green-soft)}
   .wal.sel .check{display:flex}
-  .wal .check{display:none;position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center}
-  .wal .ic{width:48px;height:48px;display:flex}
-  .wal .ic svg{width:100%;height:100%;border-radius:13px;box-shadow:0 5px 14px rgba(20,27,45,.15),0 1px 2px rgba(20,27,45,.1)}
-  .wal .ic img{width:100%;height:100%;border-radius:13px;object-fit:contain;background:#fff;box-shadow:0 5px 14px rgba(20,27,45,.15),0 1px 2px rgba(20,27,45,.1)}
-  .wal.sel .ic svg{box-shadow:0 6px 18px rgba(15,190,124,.28)}
-  .wal .nm{font-size:11px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.15;height:26px;display:flex;align-items:center}
-  .hint{font-size:11.5px;color:var(--muted);text-align:center;margin:14px 4px 0;line-height:1.4}
-  .net-wrap{margin-top:14px}
-  .net-h{font-size:15px;font-weight:800;margin:0 0 12px}
-  .net-grid{display:flex;flex-wrap:wrap;gap:10px}
-  .net{border:2px solid var(--line-2);border-radius:12px;padding:10px 18px;font-weight:700;font-size:14px;color:var(--ink-2);cursor:pointer;background:#fff;transition:.13s;min-width:96px;text-align:center}
+  .wal .check{display:none;position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;font-size:10px;font-weight:800;align-items:center;justify-content:center}
+  .wal .ic{width:40px;height:40px;display:flex}
+  .wal .ic svg{width:100%;height:100%;border-radius:11px;box-shadow:0 4px 11px rgba(20,27,45,.14),0 1px 2px rgba(20,27,45,.1)}
+  .wal .ic img{width:100%;height:100%;border-radius:11px;object-fit:contain;background:#fff;box-shadow:0 4px 11px rgba(20,27,45,.14),0 1px 2px rgba(20,27,45,.1)}
+  .wal.sel .ic svg{box-shadow:0 5px 15px rgba(15,190,124,.26)}
+  .wal .nm{font-size:10px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.1;height:24px;display:flex;align-items:center}
+  .hint{font-size:11.5px;color:var(--muted);text-align:center;margin:12px 4px 0;line-height:1.4}
+  .net-wrap{margin-top:12px;scroll-margin-bottom:96px}
+  .net-h{font-size:12px;font-weight:800;margin:0 0 9px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
+  .net-grid{display:flex;flex-wrap:wrap;gap:8px}
+  .net{border:1.6px solid var(--line-2);border-radius:10px;padding:8px 13px;font-weight:700;font-size:13px;color:var(--ink-2);cursor:pointer;background:#fff;transition:.13s;text-align:center}
   .net.sel{border-color:var(--green);background:var(--green-soft);color:var(--ink)}
 
   /* qr */
@@ -688,7 +688,7 @@
               <div class="net-grid" id="netGrid"><!-- filled per selected wallet by renderNetworks() --></div>
             </div>
           </div>
-          <div style="height:12px"></div>
+          <div style="height:88px"></div>
         </div>
       </div>
       <div class="footbar">
@@ -1005,6 +1005,10 @@ function renderNetworks(){
   if(!chains.includes(CHAIN[state.network])) state.network=NET_LABEL[chains[0]];
   $('netGrid').innerHTML=chains.map(ch=>{const L=NET_LABEL[ch];
     return `<div class="net ${L===state.network?'sel':''}" data-net="${L}">${L}</div>`;}).join('');
+  // reveal the chain options without the user having to scroll (no-op if already in view)
+  const nw=$('netWrap');
+  if(nw && getComputedStyle(nw).display!=='none')
+    setTimeout(()=>nw.scrollIntoView({behavior:'smooth',block:'nearest'}),40);
 }
 
 $('tabs').addEventListener('click',e=>{const t=e.target.closest('.t');if(!t)return;
