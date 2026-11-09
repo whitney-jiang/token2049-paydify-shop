@@ -124,13 +124,14 @@ def create_payment(amount, currency, pay1, pay2, desc, title=""):
         except (TypeError, ValueError):
             amount = "0.10"
 
+    ids = {"merchantId": mid, "merchantAppId": aid}
     def build(with_methods):
         b = {
             "mchTxnId": "t2049-%d" % int(time.time() * 1000),
             "txnAmount": str(amount),
             "currency": (currency or "USDT").upper(),
             "checkoutMode": "MERCHANT",
-            "merchantId": mid, "merchantAppId": aid,
+            **ids,
             "notificationUrl": CALLBACK_URL,
             "successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": "",
             "txnTitle": (title or "")[:120], "txnDesc": (desc or "")[:120],
@@ -143,6 +144,10 @@ def create_payment(amount, currency, pay1, pay2, desc, title=""):
 
     specific = bool(pay1 or pay2)
     resp = _post(key, secret, build(specific))
+    # Credential not granted for the default merchant/app → let Paydify resolve them from the key.
+    if "grant" in str(resp.get("message") or "") + str(resp.get("messageDetail") or ""):
+        ids.clear()
+        resp = _post(key, secret, build(specific))
     if resp.get("code") != "SYS_SUCCESS" and specific:      # combo not accepted → generic order
         resp = _post(key, secret, build(False)); specific = False
     if resp.get("code") != "SYS_SUCCESS":
@@ -155,7 +160,7 @@ def create_payment(amount, currency, pay1, pay2, desc, title=""):
             if mch:
                 TXN2MCH[txn] = mch
         log("order created  txnId=%s  amount=%s %s" % (txn, amount, (currency or "USDT")))
-    return {"ok": True, "txnId": txn, "httplink": d.get("httplink"),
+    return {"ok": True, "txnId": txn, "merchantId": d.get("merchantId"), "appId": d.get("merchantAppId") or d.get("appId"), "httplink": d.get("httplink"),
             "qrCode": d.get("qrCode"), "state": d.get("state"), "specific": specific}
 
 
@@ -241,7 +246,7 @@ class Handler(BaseHTTPRequestHandler):
             for pm in ("BINANCE", "GATEIO"):
                 r = create_payment("0.20", "USDT", pm, "", "diag", "diag")
                 probe[pm] = {"ok": r.get("ok"), "specific": r.get("specific"),
-                             "error": r.get("error"), "httplink": (r.get("httplink") or "")[:80]}
+                             "error": r.get("error"), "merchantId": r.get("merchantId"), "appId": r.get("appId"), "httplink": (r.get("httplink") or "")[:80]}
             self._send(200, "application/json", json.dumps({
                 "keyPrefix": key[:4] + "…" if key else None, "keyLen": len(key),
                 "secretLen": len(secret), "merchantId": mid, "appId": aid, "probe": probe}))
