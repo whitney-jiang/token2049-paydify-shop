@@ -54,7 +54,7 @@ def load_creds():
     key = os.environ.get("PAYDIFY_KEY")
     secret = os.environ.get("PAYDIFY_SECRET")
     merchant_id = os.environ.get("PAYDIFY_MERCHANT_ID", "M524689056")
-    app_id = os.environ.get("PAYDIFY_APP_ID", "A24689057")
+    app_id = os.environ.get("PAYDIFY_APP_ID", "A74994813")
     p = os.path.join(HERE, "paydify.secret.json")
     if (not key or not secret) and os.path.exists(p):
         c = json.load(open(p))
@@ -239,38 +239,6 @@ class Handler(BaseHTTPRequestHandler):
             txn = (parse_qs(parsed.query).get("txnId") or [""])[0]
             st = status_of(txn)
             self._send(200, "application/json", json.dumps({"state": st, "paid": st == "PAID"}))
-            return
-        if path == "/api/diag2":                        # which id-field shape does this key accept?
-            key, secret, mid, aid = load_creds()
-            aid = (parse_qs(parsed.query).get("app") or [aid])[0]
-            shapes = {"merchantAppId_only": {"merchantAppId": aid}} if parse_qs(parsed.query).get("pm") else {"merchantAppId_only": {"merchantAppId": aid}, "appId_only": {"appId": aid},
-                      "merchantId+appId": {"merchantId": mid, "appId": aid},
-                      "merchantId_only": {"merchantId": mid}, "none": {},
-                      "both_legacy": {"merchantId": mid, "merchantAppId": aid}}
-            out = {}
-            for name, ids in shapes.items():
-                b = {"mchTxnId": "t2049-%d" % int(time.time() * 1000), "txnAmount": "0.20", "currency": "USDT",
-                     "checkoutMode": "MERCHANT", "notificationUrl": CALLBACK_URL, "payMethod1": (parse_qs(parsed.query).get("pm") or ["BINANCE"])[0],
-                     "successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": "",
-                     "txnTitle": "diag", "txnDesc": "diag", **ids}
-                r = _post(key, secret, b)
-                d = r.get("data") or {}
-                out[name] = {"code": r.get("code"), "msg": r.get("messageDetail") or r.get("message"),
-                             "txnId": d.get("txnId"), "merchantId": d.get("merchantId"),
-                             "app": d.get("merchantAppId") or d.get("appId")}
-                time.sleep(0.05)
-            self._send(200, "application/json", json.dumps(out))
-            return
-        if path == "/api/diag":                         # safe self-check: never returns the secret
-            key, secret, mid, aid = load_creds()
-            probe = {}
-            for pm in ("BINANCE", "GATEIO"):
-                r = create_payment("0.20", "USDT", pm, "", "diag", "diag")
-                probe[pm] = {"ok": r.get("ok"), "specific": r.get("specific"),
-                             "error": r.get("error"), "merchantId": r.get("merchantId"), "appId": r.get("appId"), "httplink": (r.get("httplink") or "")[:80]}
-            self._send(200, "application/json", json.dumps({
-                "keyPrefix": key[:4] + "…" if key else None, "keyLen": len(key),
-                "secretLen": len(secret), "merchantId": mid, "appId": aid, "probe": probe}))
             return
         if path == "/api/dev/paid":                     # LOCAL TEST ONLY
             txn = (parse_qs(parsed.query).get("txnId") or [""])[0]
