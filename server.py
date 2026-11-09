@@ -62,6 +62,14 @@ def load_creds():
         secret = secret or c.get("secret")
         merchant_id = c.get("merchantId", merchant_id)
         app_id = c.get("appId", app_id)
+    # Values pasted into a dashboard often carry a trailing newline/space or wrapping quotes,
+    # which silently breaks the HMAC ("Invalid signature"). Normalise them.
+    clean = lambda v: (v or "").strip().strip('"').strip("'").strip()
+    key, secret, merchant_id, app_id = clean(key), clean(secret), clean(merchant_id), clean(app_id)
+    # App-level credentials use the app id itself as x-api-key (e.g. "A24689057"): the order must
+    # then carry that same app as merchantAppId, otherwise Paydify rejects it.
+    if key.startswith("A") and key[1:].isdigit() and not os.environ.get("PAYDIFY_APP_ID"):
+        app_id = key
     return key, secret, merchant_id, app_id
 
 
@@ -227,6 +235,17 @@ class Handler(BaseHTTPRequestHandler):
             st = status_of(txn)
             self._send(200, "application/json", json.dumps({"state": st, "paid": st == "PAID"}))
             return
+        if path == "/api/diag":                         # safe self-check: never returns the secret
+            key, secret, mid, aid = load_creds()
+            probe = {}
+            for pm in ("BINANCE", "GATEIO"):
+                r = create_payment("0.20", "USDT", pm, "", "diag", "diag")
+                probe[pm] = {"ok": r.get("ok"), "specific": r.get("specific"),
+                             "error": r.get("error"), "httplink": (r.get("httplink") or "")[:80]}
+            self._send(200, "application/json", json.dumps({
+                "keyPrefix": key[:4] + "…" if key else None, "keyLen": len(key),
+                "secretLen": len(secret), "merchantId": mid, "appId": aid, "probe": probe}))
+            return
         if path == "/api/dev/paid":                     # LOCAL TEST ONLY
             txn = (parse_qs(parsed.query).get("txnId") or [""])[0]
             with LOCK:
@@ -293,5 +312,5 @@ if __name__ == "__main__":
     print(" listen   : http://%s:%d/  (default page: %s)" % (host, port, HTML))
     print(" creds    : %s   merchant=%s app=%s" % ("loaded" if key else "MISSING (set PAYDIFY_KEY/PAYDIFY_SECRET)", mid, aid))
     print(" amount   : %s" % (("fixed " + os.environ["FIXED_AMOUNT"]) if os.environ.get("FIXED_AMOUNT") else ("cap " + os.environ.get("MAX_AMOUNT", "100"))))
-    print("=" * 56)
+    print("=" * 56, flush=True)
     ThreadingHTTPServer((host, port), Handler).serve_forever()

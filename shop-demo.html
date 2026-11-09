@@ -1029,7 +1029,16 @@ $('netGrid').addEventListener('click',e=>{const n=e.target.closest('.net');if(!n
   state.network=n.dataset.net;$('netGrid').querySelectorAll('.net').forEach(x=>x.classList.remove('sel'));n.classList.add('sel');});
 
 /* ---------- QR ---------- */
-function offlineQR(){
+function offlineQR(err){
+  if(err){                                      // backend reachable but Paydify refused the order
+    const esc=String(err).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+    $('qrBox').innerHTML='<div class="qr-loading" style="gap:10px;padding:6px">'
+      +'<div style="font-size:34px">⚠️</div>'
+      +'<div style="font-weight:800;color:var(--ink);font-size:14px">Order not created</div>'
+      +'<div style="text-align:center;line-height:1.55;color:var(--muted)">Paydify: <b style="color:var(--ink)">'+esc+'</b></div></div>';
+    $('qrReal').textContent='● No live order — don’t scan';
+    return;
+  }
   // no backend reachable (e.g. opened as a plain file:// instead of via the server).
   // Show a clear warning instead of a scannable no-amount code, so nobody scans the wrong QR.
   $('qrBox').innerHTML='<div class="qr-loading" style="gap:10px;padding:6px">'
@@ -1071,7 +1080,7 @@ async function toQR(){
     startPolling(d.txnId);          // flip to success automatically when the callback marks it PAID
   }catch(e){
     if(reqId!==toQR._n) return;
-    offlineQR();                                // no backend / call failed → non-expiring merchant link
+    offlineQR(e&&e.message&&e.message!=='Failed to fetch'&&!/JSON/.test(e.message)?e.message:'');
   }
 }
 toQR._n=0;
