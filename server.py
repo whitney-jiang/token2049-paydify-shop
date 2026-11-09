@@ -240,6 +240,26 @@ class Handler(BaseHTTPRequestHandler):
             st = status_of(txn)
             self._send(200, "application/json", json.dumps({"state": st, "paid": st == "PAID"}))
             return
+        if path == "/api/diag2":                        # which id-field shape does this key accept?
+            key, secret, mid, aid = load_creds()
+            shapes = {"merchantAppId_only": {"merchantAppId": aid}, "appId_only": {"appId": aid},
+                      "merchantId+appId": {"merchantId": mid, "appId": aid},
+                      "merchantId_only": {"merchantId": mid}, "none": {},
+                      "both_legacy": {"merchantId": mid, "merchantAppId": aid}}
+            out = {}
+            for name, ids in shapes.items():
+                b = {"mchTxnId": "t2049-%d" % int(time.time() * 1000), "txnAmount": "0.20", "currency": "USDT",
+                     "checkoutMode": "MERCHANT", "notificationUrl": CALLBACK_URL, "payMethod1": "BINANCE",
+                     "successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": "",
+                     "txnTitle": "diag", "txnDesc": "diag", **ids}
+                r = _post(key, secret, b)
+                d = r.get("data") or {}
+                out[name] = {"code": r.get("code"), "msg": r.get("messageDetail") or r.get("message"),
+                             "txnId": d.get("txnId"), "merchantId": d.get("merchantId"),
+                             "app": d.get("merchantAppId") or d.get("appId")}
+                time.sleep(0.05)
+            self._send(200, "application/json", json.dumps(out))
+            return
         if path == "/api/diag":                         # safe self-check: never returns the secret
             key, secret, mid, aid = load_creds()
             probe = {}
