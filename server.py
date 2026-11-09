@@ -242,6 +242,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/diag2":                        # which id-field shape does this key accept?
             key, secret, mid, aid = load_creds()
+            aid = (parse_qs(parsed.query).get("app") or [aid])[0]
             shapes = {"merchantAppId_only": {"merchantAppId": aid}, "appId_only": {"appId": aid},
                       "merchantId+appId": {"merchantId": mid, "appId": aid},
                       "merchantId_only": {"merchantId": mid}, "none": {},
