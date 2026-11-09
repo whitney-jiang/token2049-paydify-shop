@@ -243,14 +243,14 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/diag2":                        # which id-field shape does this key accept?
             key, secret, mid, aid = load_creds()
             aid = (parse_qs(parsed.query).get("app") or [aid])[0]
-            shapes = {"merchantAppId_only": {"merchantAppId": aid}, "appId_only": {"appId": aid},
+            shapes = {"merchantAppId_only": {"merchantAppId": aid}} if parse_qs(parsed.query).get("pm") else {"merchantAppId_only": {"merchantAppId": aid}, "appId_only": {"appId": aid},
                       "merchantId+appId": {"merchantId": mid, "appId": aid},
                       "merchantId_only": {"merchantId": mid}, "none": {},
                       "both_legacy": {"merchantId": mid, "merchantAppId": aid}}
             out = {}
             for name, ids in shapes.items():
                 b = {"mchTxnId": "t2049-%d" % int(time.time() * 1000), "txnAmount": "0.20", "currency": "USDT",
-                     "checkoutMode": "MERCHANT", "notificationUrl": CALLBACK_URL, "payMethod1": "BINANCE",
+                     "checkoutMode": "MERCHANT", "notificationUrl": CALLBACK_URL, "payMethod1": (parse_qs(parsed.query).get("pm") or ["BINANCE"])[0],
                      "successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": "",
                      "txnTitle": "diag", "txnDesc": "diag", **ids}
                 r = _post(key, secret, b)
