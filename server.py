@@ -108,6 +108,8 @@ def _post(key, secret, body):
 # back. For these we pass success/fail return URLs → our /return page, which offers explicit
 # "back" buttons (custom scheme / intent / plain https) so the jump-out behaviour can be tested.
 RETURN_WALLETS = {"METAMASK", "IMTOKEN"}
+# Test: send MetaMask straight back to a native app via its custom scheme (no https hop).
+FIXED_RETURN = {"METAMASK": "onestoreglb://inapp"}
 
 
 def create_payment(amount, currency, pay1, pay2, desc, title="", base=""):
@@ -134,7 +136,10 @@ def create_payment(amount, currency, pay1, pay2, desc, title="", base=""):
     ids = {"merchantId": mid, "merchantAppId": aid}
     mch_id = "t2049-%d" % int(time.time() * 1000)
     ret = {"successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": ""}
-    if (pay1 or "").upper() in RETURN_WALLETS and base.startswith("https://"):
+    w = (pay1 or "").upper()
+    if w in FIXED_RETURN:                       # wallet with a hard-coded app deep link (custom scheme)
+        ret["successReturnUrl"] = ret["failReturnUrl"] = FIXED_RETURN[w]
+    elif w in RETURN_WALLETS and base.startswith("https://"):
         q = "&w=%s&mch=%s" % ((pay1 or "").upper(), mch_id)
         ret["successReturnUrl"] = base + "/return?r=success" + q
         ret["failReturnUrl"] = base + "/return?r=fail" + q
