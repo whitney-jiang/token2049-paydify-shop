@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>支付结果 · 回跳测试</title>
+<style>
+:root{--bg:#F4F6FA;--card:#fff;--ink:#141B2D;--muted:#6B7385;--line:#E3E7EE;--ok:#14A660;--bad:#E5484D;--acc:#2F5BFF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;padding:20px 16px 40px}
+.wrap{max-width:460px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.res{text-align:center;padding:26px 18px}
+.ico{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:30px;color:#fff}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;font-size:13px}
+.kv b{color:var(--muted);font-weight:500}
+.kv span{word-break:break-all}
+h2{font-size:14px;margin:0 0 10px}
+.btn{display:block;width:100%;text-align:left;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px;background:#fff}
+.btn.pri{border-color:var(--acc)}
+.btn .t{font-weight:700;font-size:15px}
+.btn .d{color:var(--muted);font-size:12px;margin-top:2px;word-break:break-all}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:#EEF2FF;color:var(--acc);margin-left:6px;vertical-align:1px;font-weight:600}
+.hint{font-size:12px;color:var(--muted);margin-top:12px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card res">
+    <div class="ico" id="ico">✓</div>
+    <h1 id="ttl">支付成功</h1>
+    <div class="sub" id="sub">已从收银台回跳到商户结果页</div>
+  </div>
+
+  <div class="card">
+    <h2>本次回跳信息</h2>
+    <div class="kv">
+      <b>回跳类型</b><span id="kR"></span>
+      <b>钱包</b><span id="kW"></span>
+      <b>当前环境</b><span id="kEnv"></span>
+      <b>商户单号</b><span id="kMch"></span>
+      <b>Paydify 单</b><span id="kTxn"></span>
+      <b>订单状态</b><span id="kSt">查询中…</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>返回商户（逐个点，看能否跳出钱包）</h2>
+    <div id="btns"></div>
+    <div class="hint">未跳转？请手动切回浏览器或商户 App。<br>测试要点：每个按钮点完记录「直接跳 / 弹确认框后跳 / 没反应 / 在钱包内打开」。</div>
+  </div>
+
+  <div class="card">
+    <h2>UA</h2>
+    <div class="sub" id="ua" style="word-break:break-all"></div>
+  </div>
+</div>
+<script>
+var D=/*__DATA__*/null||{};
+var $=function(i){return document.getElementById(i)};
+var ua=navigator.userAgent, isIOS=/iPhone|iPad|iPod/i.test(ua), isAnd=/Android/i.test(ua);
+var env=/MetaMask/i.test(ua)?'MetaMask 内置浏览器':/imToken/i.test(ua)?'imToken 内置浏览器':'普通浏览器';
+env+=isIOS?' · iOS':isAnd?' · Android':'';
+var ok=D.r==='success';
+if(!ok){$('ico').style.background='var(--bad)';$('ico').textContent='✕';$('ttl').textContent=D.r==='fail'?'支付失败':'支付结果未知';}
+else $('ico').style.background='var(--ok)';
+$('kR').textContent=(D.r||'-')+(ok?'（successReturnUrl）':D.r==='fail'?'（failReturnUrl）':'');
+$('kW').textContent=D.w||'-'; $('kEnv').textContent=env;
+$('kMch').textContent=D.mch||'-'; $('kTxn').textContent=D.txn||'（服务重启过，内存里查不到）';
+$('ua').textContent=ua;
+
+var base=(D.base||location.origin).replace(/\/$/,''), host=base.replace(/^https?:\/\//,'');
+var path='/?from=return&r='+encodeURIComponent(D.r||'');
+var list=[];
+if(isIOS||!isAnd){
+  list.push({pri:1,t:'回到 Safari',tag:'自定义 scheme',u:'x-safari-https://'+host+path,d:'x-safari-https://（iOS 17+）'});
+  list.push({t:'回到 Chrome',tag:'自定义 scheme',u:'googlechromes://'+host+path,d:'googlechromes://（需装 Chrome）'});
+}
+if(isAnd||!isIOS){
+  list.push({pri:1,t:'回到 Chrome',tag:'intent://',u:'intent://'+host+path+'#Intent;scheme=https;package=com.android.chrome;end',d:'intent 指定 Chrome 包名'});
+  list.push({t:'回到系统默认浏览器',tag:'intent://',u:'intent://'+host+path+'#Intent;scheme=https;action=android.intent.action.VIEW;end',d:'intent 不指定包名'});
+  list.push({t:'回到 Chrome',tag:'自定义 scheme',u:'googlechrome://navigate?url='+encodeURIComponent(base+path),d:'googlechrome://navigate'});
+}
+list.push({t:'普通 https 链接（对照组）',tag:'https',u:base+path,d:'预期：在钱包内置浏览器里打开，跳不出去'});
+$('btns').innerHTML=list.map(function(b){
+  return '<a class="btn'+(b.pri?' pri':'')+'" href="'+b.u.replace(/"/g,'&quot;')+'"><div class="t">'+b.t+'<span class="tag">'+b.tag+'</span></div><div class="d">'+b.d+'<br>'+b.u.replace(/</g,'&lt;')+'</div></a>';
+}).join('');
+
+function poll(n){
+  if(!D.txn){$('kSt').textContent='-';return;}
+  fetch('api/status?txnId='+encodeURIComponent(D.txn)).then(function(r){return r.json()}).then(function(j){
+    $('kSt').textContent=j.state||'-';
+    if(!j.paid&&n<20&&['FAILED','TIMEOUT'].indexOf(j.state)<0)setTimeout(function(){poll(n+1)},3000);
+  }).catch(function(){$('kSt').textContent='查询失败'});
+}
+poll(0);
+</script>
+</body>
+</html>

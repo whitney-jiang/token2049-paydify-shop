@@ -41,6 +41,7 @@ CALLBACK_URL = (PUBLIC_BASE + CALLBACK_PATH) if PUBLIC_BASE.startswith("https://
 # so /api/status can ask Paydify for the live state. Demo-scale.
 ORDERS = {}
 TXN2MCH = {}
+MCH2TXN = {}
 LOCK = threading.Lock()
 FINAL = {"PAID", "FAILED", "TIMEOUT"}
 
@@ -103,7 +104,13 @@ def _post(key, secret, body):
         return {"code": "NETWORK", "message": str(e)}
 
 
-def create_payment(amount, currency, pay1, pay2, desc, title=""):
+# Wallets whose in-app (WebView) browser opens the Paydify checkout and has no protocol-level way
+# back. For these we pass success/fail return URLs → our /return page, which offers explicit
+# "back" buttons (custom scheme / intent / plain https) so the jump-out behaviour can be tested.
+RETURN_WALLETS = {"METAMASK", "IMTOKEN"}
+
+
+def create_payment(amount, currency, pay1, pay2, desc, title="", base=""):
     """Create a real order carrying the exact currency / wallet (payMethod1) / chain (payMethod2)
     the shopper picked. If that specific combo isn't accepted, retry generic so the QR still works."""
     key, secret, mid, aid = load_creds()
@@ -125,15 +132,21 @@ def create_payment(amount, currency, pay1, pay2, desc, title=""):
             amount = "0.10"
 
     ids = {"merchantId": mid, "merchantAppId": aid}
+    mch_id = "t2049-%d" % int(time.time() * 1000)
+    ret = {"successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": ""}
+    if (pay1 or "").upper() in RETURN_WALLETS and base.startswith("https://"):
+        q = "&w=%s&mch=%s" % ((pay1 or "").upper(), mch_id)
+        ret["successReturnUrl"] = base + "/return?r=success" + q
+        ret["failReturnUrl"] = base + "/return?r=fail" + q
     def build(with_methods):
         b = {
-            "mchTxnId": "t2049-%d" % int(time.time() * 1000),
+            "mchTxnId": mch_id,
             "txnAmount": str(amount),
             "currency": (currency or "USDT").upper(),
             "checkoutMode": "MERCHANT",
             **ids,
             "notificationUrl": CALLBACK_URL,
-            "successReturnUrl": "", "failReturnUrl": "", "pendingReturnUrl": "",
+            **ret,
             "txnTitle": (title or "")[:120], "txnDesc": (desc or "")[:120],
         }
         if with_methods and pay1:
@@ -159,8 +172,11 @@ def create_payment(amount, currency, pay1, pay2, desc, title=""):
             ORDERS[txn] = (d.get("state") or "INIT").upper()
             if mch:
                 TXN2MCH[txn] = mch
+                MCH2TXN[mch] = txn
         log("order created  txnId=%s  amount=%s %s" % (txn, amount, (currency or "USDT")))
-    return {"ok": True, "txnId": txn, "merchantId": d.get("merchantId"), "appId": d.get("merchantAppId") or d.get("appId"), "httplink": d.get("httplink"),
+    if ret["successReturnUrl"]:
+        log("return urls    success=%s  fail=%s" % (ret["successReturnUrl"], ret["failReturnUrl"]))
+    return {"ok": True, "txnId": txn, "returnUrls": ret, "merchantId": d.get("merchantId"), "appId": d.get("merchantAppId") or d.get("appId"), "httplink": d.get("httplink"),
             "qrCode": d.get("qrCode"), "state": d.get("state"), "specific": specific}
 
 
@@ -221,6 +237,14 @@ def verify_callback(headers, raw_body):
     return hmac.compare_digest(expect, got)
 
 
+RETURN_HTML = open(os.path.join(HERE, "return.html"), encoding="utf-8").read() if os.path.exists(os.path.join(HERE, "return.html")) else ""
+
+
+def return_page(base, r, w, mch, txn):
+    data = json.dumps({"base": base, "r": r, "w": w, "mch": mch, "txn": txn})
+    return RETURN_HTML.replace("/*__DATA__*/null", data.replace("</", "<\\/"))
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, ctype, body):
         if isinstance(body, str):
@@ -232,9 +256,27 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _base(self):
+        if PUBLIC_BASE.startswith("https://"):
+            return PUBLIC_BASE
+        host = self.headers.get("x-forwarded-host") or self.headers.get("host") or ""
+        proto = (self.headers.get("x-forwarded-proto") or "").split(",")[0].strip()
+        if not proto:
+            proto = "http" if host.startswith(("127.", "localhost")) else "https"
+        return ("%s://%s" % (proto, host)) if host else ""
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        if path == "/return":
+            q = parse_qs(parsed.query)
+            g = lambda k: (q.get(k) or [""])[0]
+            mch = g("mch")
+            with LOCK:
+                txn = MCH2TXN.get(mch, "")
+            log("RETURN HIT    r=%s w=%s mch=%s txn=%s ua=%s" % (g("r"), g("w"), mch, txn, self.headers.get("user-agent", "")[:160]))
+            self._send(200, "text/html; charset=utf-8", return_page(self._base(), g("r"), g("w"), mch, txn))
+            return
         if path == "/api/status":
             txn = (parse_qs(parsed.query).get("txnId") or [""])[0]
             st = status_of(txn)
@@ -286,7 +328,7 @@ class Handler(BaseHTTPRequestHandler):
                 data = {}
             result = create_payment(data.get("amount", "1"), data.get("currency", "USDT"),
                                     data.get("payMethod1", ""), data.get("payMethod2", ""),
-                                    data.get("desc", ""), data.get("title", ""))
+                                    data.get("desc", ""), data.get("title", ""), self._base())
             self._send(200, "application/json", json.dumps(result))
             return
 
