@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scheme 唤起测试</title>
+<style>
+:root{--bg:#F4F6FA;--ink:#141B2D;--muted:#6B7385;--line:#E3E7EE;--acc:#2F5BFF}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"PingFang SC",sans-serif;padding:20px 16px}
+.w{max-width:460px;margin:0 auto}h1{font-size:18px}
+a{display:block;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;color:var(--ink);text-decoration:none}
+a b{display:block}a span{color:var(--muted);font-size:12px;word-break:break-all}
+p{color:var(--muted);font-size:13px;word-break:break-all}
+</style></head><body><div class="w">
+<h1>onestoreglb 唤起测试</h1>
+<p>请用 Chrome 或系统浏览器打开本页（不要在 MetaMask 里），逐个点，记下哪个能打开 App。</p>
+<a href="onestoreglb://inapp"><b>1. 自定义 scheme</b><span>onestoreglb://inapp</span></a>
+<a href="intent://inapp#Intent;scheme=onestoreglb;end"><b>2. Android intent（不指定包名）</b><span>intent://inapp#Intent;scheme=onestoreglb;end</span></a>
+<p id="ua"></p>
+<script>document.getElementById('ua').textContent=navigator.userAgent</script>
+</div></body></html>
