@@ -109,7 +109,7 @@ def _post(key, secret, body):
 # "back" buttons (custom scheme / intent / plain https) so the jump-out behaviour can be tested.
 RETURN_WALLETS = {"METAMASK", "IMTOKEN"}
 # Test: send MetaMask straight back to a native app via its custom scheme (no https hop).
-FIXED_RETURN = {"METAMASK": "onestoreglb://inapp"}
+FIXED_RETURN = {"METAMASK": "onestoreglb://inhouse"}
 
 
 def create_payment(amount, currency, pay1, pay2, desc, title="", base=""):
